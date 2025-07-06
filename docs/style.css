@@ -187,3 +187,7 @@ body {
     bottom: calc(clamp(35rem, 40vw, 50rem) / -2);
   }
 }
+
+button {
+  font-family: IBM Plex Sans;
+}
