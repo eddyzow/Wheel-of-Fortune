@@ -3,232 +3,248 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Wheel of Fortune</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=Roboto:wght@800&display=swap"
       rel="stylesheet"
     />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link href="style.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
   </head>
   <body>
-    <div class="puzzle-board">
-      <div class="puzzle-row" id="row1">
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
+    <div class="main-container">
+      <div id="category-label" class="category-label">CATEGORY</div>
+
+      <div class="game-info-and-controls">
+        <div id="player-score" class="info-display">
+          Score: $<span id="score-amount">0</span>
         </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
+        <div id="message-label" class="info-display">Spin to begin!</div>
+        <div id="solve-btn-container">
+          <button id="solve-btn">Solve Puzzle</button>
         </div>
       </div>
-      <div class="puzzle-row" id="row2">
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
+      <div class="puzzle-board">
+        <div class="puzzle-row" id="row1">
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
         </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
+        <div class="puzzle-row" id="row2">
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
         </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
+        <div class="puzzle-row" id="row3">
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
         </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
+        <div class="puzzle-row" id="row4">
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
+          <div class="tile-container">
+            <img class="tile" src="WoF Puzzle Board SVG.svg" />
+            <span class="tile-letter"></span>
+          </div>
         </div>
       </div>
-      <div class="puzzle-row" id="row3">
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-      </div>
-      <div class="puzzle-row" id="row4">
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-        <div class="tile-container">
-          <img class="tile" src="WoF Puzzle Board SVG.svg" />
-          <span class="tile-letter"></span>
-        </div>
-      </div>
+
+      <img id="wheel" src="image.png" />
     </div>
     <script src="script.js"></script>
   </body>
