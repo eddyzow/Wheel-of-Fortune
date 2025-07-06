@@ -1,0 +1,102 @@
+html {
+  font-family: "Roboto", sans-serif;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  background: #222;
+}
+
+.puzzle-board {
+  margin-top: 24vh;
+  padding: 1vw;
+  box-sizing: border-box;
+  position: relative;
+  clip-path: polygon(
+    6vw 0,
+    calc(100% - 6vw) 0,
+    calc(100% - 6vw) 7.2vw,
+    100% 7.2vw,
+    100% calc(100% - 7.2vw),
+    calc(100% - 6vw) calc(100% - 7.2vw),
+    calc(100% - 6vw) 100%,
+    6vw 100%,
+    6vw calc(100% - 7.2vw),
+    0 calc(100% - 7.2vw),
+    0 7.2vw,
+    6vw 7.2vw
+  );
+  background-color: #2f7780;
+}
+
+.puzzle-row {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  line-height: 0;
+}
+
+.puzzle-row:not(:first-child) {
+  margin-top: 0.2vw;
+}
+
+.tile-container {
+  position: relative;
+  width: 6vw;
+  margin: 0 0.1vw;
+  display: inline-block;
+  user-select: none;
+}
+
+.tile {
+  width: 100%;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tile-letter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 4.8vw;
+  height: 6vw;
+
+  font-weight: 800;
+  font-size: 4vw;
+  color: black;
+
+  background-color: white;
+  border-radius: 0;
+
+  pointer-events: none;
+  user-select: none;
+
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  white-space: nowrap;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.tile-container.revealed .tile-letter {
+  opacity: 1;
+}
+
+.tile-container.unrevealed .tile-letter {
+  background-color: #002fff;
+  opacity: 1;
+  color: transparent;
+}
