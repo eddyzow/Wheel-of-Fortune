@@ -70,7 +70,21 @@ $(function () {
     return lines;
   }
 
+  function setRandomWallpaper() {
+    // 1. Generate a random number between 1 and 9.
+    const wallpaperCount = 9;
+    const randomWallpaperNumber =
+      Math.floor(Math.random() * wallpaperCount) + 1;
+
+    // 2. Construct the file path to the image.
+    const wallpaperUrl = `url('wallpapers/${randomWallpaperNumber}.png')`;
+
+    // 3. Apply the new background image to the body.
+    $("#wallpaper").css("background-image", wallpaperUrl);
+  }
+
   function setupNewGame() {
+    setRandomWallpaper();
     usedLetters = [];
     currentRotation = 0;
     gameState = "playing";

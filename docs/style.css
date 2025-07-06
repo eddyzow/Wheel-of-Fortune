@@ -4,7 +4,6 @@ html,
 body {
   font-family: "IBM Plex Sans", sans-serif;
   overflow: hidden;
-  background: #222;
   color: white;
 }
 
@@ -31,7 +30,7 @@ body {
   font-weight: 800;
   font-family: "Roboto", sans-serif;
   text-transform: uppercase;
-  background-color: #004040;
+  background-color: #00404093;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   font-size: clamp(1.1rem, 2.5vw, 1.75rem);
@@ -44,7 +43,7 @@ body {
   justify-content: space-between;
   align-items: center;
   width: clamp(45rem, 90vw, 70rem);
-  background: #1c1c1c;
+  background: #1c1c1ccc;
   border-radius: 10px;
   padding: 10px 20px;
   box-sizing: border-box;
@@ -142,6 +141,17 @@ body {
   background-size: 100% 100%;
 }
 
+#wallpaper {
+  filter: brightness(0.3);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  background-size: cover;
+  left: 0;
+  z-index: -1;
+  position: fixed;
+}
+
 .tile-letter {
   position: absolute;
   top: 50%;
@@ -178,6 +188,16 @@ body {
   height: clamp(35rem, 40vw, 45rem);
   width: clamp(35rem, 40vw, 45rem);
   bottom: calc(clamp(35rem, 40vw, 45rem) / -2);
+}
+
+#ptr {
+  position: fixed;
+  left: 50%;
+  --rotation-angle: 0deg;
+  transform: translateX(-50%) rotate(var(--rotation-angle));
+  bottom: clamp(250px, 18vw, 340px);
+  width: 4vw;
+  z-index: 10;
 }
 
 @media (min-width: 2000px) {
