@@ -30,7 +30,7 @@ $(function () {
   const ding = new Howl({ src: ["assets/sounds/ding.mp3"], volume: 1.0 });
   const spin = new Howl({ src: ["assets/sounds/spin.mp3"], volume: 1.0 });
   const reveal = new Howl({ src: ["assets/sounds/reveal.mp3"], volume: 1.0 });
-  const buzzer = new Howl({ src: ["assets/sounds/buzzer.mp3"], volume: 1.0 });
+  const buzzer = new Howl({ src: ["assets/sounds/buzzer.mp3"], volume: 0.4 });
   const solved = new Howl({ src: ["assets/sounds/solved.mp3"], volume: 1.0 });
   const bankrupt = new Howl({
     src: ["assets/sounds/bankrupt.mp3"],
@@ -42,7 +42,7 @@ $(function () {
     volume: 1.0,
   });
   const tossupMusic = new Howl({
-    src: ["assets/sounds/tossup.mp3"],
+    src: ["assets/sounds/tossup1.mp3"],
     volume: 0.5,
     loop: true,
   });
@@ -50,12 +50,17 @@ $(function () {
     src: ["assets/sounds/tossupsolved.mp3"],
     volume: 1.0,
   });
-
+  const tossupSounds = [
+    new Howl({ src: ["assets/sounds/tossup1.mp3"], volume: 0.5 }),
+    new Howl({ src: ["assets/sounds/tossup2.mp3"], volume: 0.5 }),
+    new Howl({ src: ["assets/sounds/tossup3.mp3"], volume: 0.5 }),
+  ];
+  // --- FIX: Define the sequence using the pre-loaded sounds ---
   const tossupSequence = [
-    "assets/sounds/tossup1.mp3",
-    "assets/sounds/tossup2.mp3",
-    "assets/sounds/tossup3.mp3",
-    "assets/sounds/tossup2.mp3",
+    tossupSounds[0],
+    tossupSounds[1],
+    tossupSounds[2],
+    tossupSounds[1],
   ];
 
   const VOWELS = ["A", "E", "I", "O", "U"];
@@ -93,6 +98,29 @@ $(function () {
   let solveCallback = null;
 
   // --- Helper Functions ---
+
+  function playNextTossupSong() {
+    // Get the next sound object from the sequence
+    currentTossupSound = tossupSequence[tossupMusicIndex];
+
+    // When this sound finishes, automatically play the next one
+    currentTossupSound.once("end", playNextTossupSong);
+
+    currentTossupSound.play();
+
+    // Increment the index for the next song in the loop
+    tossupMusicIndex = (tossupMusicIndex + 1) % tossupSequence.length;
+  }
+
+  // --- NEW: Function to cleanly stop the music loop ---
+  function stopTossupMusic() {
+    if (currentTossupSound) {
+      currentTossupSound.off("end"); // This is crucial to prevent the next song from starting
+      currentTossupSound.stop();
+      currentTossupSound = null;
+    }
+  }
+
   function splitIntoLines(puzzleText, availableLineLengths) {
     const words = puzzleText.trim().split(/\s+/);
     if (!words.length) return [];
@@ -382,9 +410,8 @@ $(function () {
 
   function resetGame() {
     // --- FIX: Stop the current toss-up sound if it exists ---
-    if (currentTossupSound) {
-      currentTossupSound.stop();
-    }
+    stopTossupMusic();
+
     if (tossUpInterval) clearInterval(tossUpInterval);
     if (pointsUpdateInterval) clearInterval(pointsUpdateInterval);
 
@@ -485,7 +512,7 @@ $(function () {
       const elapsed = Date.now() - tossUpStartTime;
       const progress = elapsed / tossUpDuration;
       tossUpCurrentPoints = Math.round(
-        Math.max(0, 1000 * Math.pow(1 - progress, 0.7))
+        Math.max(0, 1000 * Math.pow(1 - progress, 0.6))
       );
       $("#tossup-points").text(tossUpCurrentPoints);
     }, 50);
@@ -495,13 +522,14 @@ $(function () {
         const tileToReveal = remainingLetterTiles.pop();
         revealLetter(tileToReveal, $(tileToReveal).data("letter"), false);
       }
+
+      // --- FIX: This block now ends the round immediately ---
       if (remainingLetterTiles.length === 0) {
         clearInterval(tossUpInterval);
-        setTimeout(() => {
-          if (gameState === "tossup_revealing") {
-            handleTossUpSolve(false, 0);
-          }
-        }, 1000);
+        // The 1-second setTimeout was removed from here.
+        if (gameState === "tossup_revealing") {
+          handleTossUpSolve(false, 0);
+        }
       }
     };
 
@@ -527,8 +555,13 @@ $(function () {
           return letter && letter.match(/[A-Z0-9]/); // Only guessable tiles
         })
         .get();
-      tossUpDuration = remainingLetterTiles.length * 1000;
 
+      // --- FIX: Correctly calculate the duration for point decay ---
+      // The duration is the time between the first and last letter reveal.
+      const letterCount = remainingLetterTiles.length;
+      tossUpDuration = letterCount > 1 ? (letterCount - 1) * 1000 : 1;
+
+      // Shuffle the tiles
       for (let i = remainingLetterTiles.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [remainingLetterTiles[i], remainingLetterTiles[j]] = [
@@ -538,13 +571,7 @@ $(function () {
       }
 
       $("#message-label").text("Press SPACE to buzz in!");
-      const songPath = tossupSequence[tossupMusicIndex];
-      currentTossupSound = new Howl({ src: [songPath], volume: 0.5 });
-      currentTossupSound.play();
-
-      // Move to the next song for the next round, looping back to the start
-      tossupMusicIndex = (tossupMusicIndex + 1) % tossupSequence.length;
-
+      playNextTossupSong();
       tossUpStartTime = Date.now();
       startTossUpIntervals();
     }, 2000);
@@ -577,13 +604,11 @@ $(function () {
 
   function handleTossUpSolve(isCorrect, points) {
     clearInterval(tossUpInterval);
-    clearInterval(pointsUpdateInterval);
-    // --- FIX: Stop the current toss-up sound if it exists ---
-    if (currentTossupSound) {
-      currentTossupSound.stop();
-    }
+    clearInterval(pointsUpdateInterval); // Stop the regular point decay
+    stopTossupMusic();
 
     if (isCorrect) {
+      // Correct solve logic remains the same
       triggerSolveAnimation();
       tossupSolvedSound.play();
       $(".puzzle-board").addClass("solved");
@@ -592,7 +617,6 @@ $(function () {
       const averagePoints = Math.round(totalTossUpPoints / tossUpRoundsPlayed);
       $("#avg-points").text(averagePoints);
 
-      // --- FIX: Calculate solve time and update message ---
       const solveTimeSeconds = (
         (tossUpPauseTime - tossUpStartTime) /
         1000
@@ -600,11 +624,23 @@ $(function () {
       $("#message-label").text(
         `Solved in ${solveTimeSeconds}s! Press SPACE for next.`
       );
-
       gameState = "tossup_solved";
     } else {
+      // --- FIX: Logic for when time runs out ---
       buzzer.play();
-      $("#tossup-points").text(0);
+
+      // Animate the points smoothly from their last value down to 0
+      $({ currentPoints: tossUpCurrentPoints }).animate(
+        { currentPoints: 0 },
+        {
+          duration: 300, // A quick 300ms animation
+          easing: "linear",
+          step: function () {
+            $("#tossup-points").text(Math.round(this.currentPoints));
+          },
+        }
+      );
+
       tossUpRoundsPlayed++;
       const averagePoints =
         tossUpRoundsPlayed > 0
@@ -617,6 +653,7 @@ $(function () {
       gameState = "tossup_failed";
     }
 
+    // Reveal the rest of the puzzle letters
     $(".tile-container").each(function () {
       const letter = $(this).data("letter");
       if (letter) {
