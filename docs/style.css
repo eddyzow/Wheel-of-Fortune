@@ -1,5 +1,23 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=Roboto:wght@800&display=swap");
 
+:root {
+  --board-width: 70em;
+  --tile-height: 5vw; /* Base height on viewport width */
+  --tile-width: calc(var(--tile-height) * 0.85);
+  --tile-font-size: calc(var(--tile-height) * 0.7);
+}
+
+@media (min-width: 1400px) {
+  :root {
+    --tile-height: 70px; /* Cap the size on large screens */
+  }
+}
+@media (max-width: 800px) {
+  :root {
+    --tile-height: 6vw;
+  }
+}
+
 html,
 body {
   font-family: "IBM Plex Sans", sans-serif;
@@ -9,7 +27,7 @@ body {
 
 body {
   margin: 0;
-  padding: 2vh 0;
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -23,26 +41,52 @@ body {
   align-items: center;
   gap: 20px;
   width: 100%;
+  transition: filter 0.5s ease;
+  padding-top: 85px; /* Increased for more space */
+}
+
+@keyframes pulsing-glow {
+  0% {
+    filter: drop-shadow(0 0 8px #2f7780);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px #2f7780);
+  }
+  100% {
+    filter: drop-shadow(0 0 8px #2f7780);
+  }
+}
+
+@keyframes solve-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .category-label {
   text-align: center;
-  font-weight: 800;
-  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-family: "IBM Plex Sans", sans-serif;
   text-transform: uppercase;
   background-color: #00404093;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   font-size: clamp(1.1rem, 2.5vw, 1.75rem);
   padding: 0.5em 1.5em;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .game-info-and-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: clamp(45rem, 90vw, 70rem);
+  width: clamp(45rem, 90vw, 80rem); /* Increased max-width */
   background: #1c1c1ccc;
   border-radius: 10px;
   padding: 10px 20px;
@@ -73,7 +117,7 @@ body {
 }
 #solve-btn {
   padding: 10px 15px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   border: none;
@@ -95,22 +139,29 @@ body {
   background-color: #2f7780;
   padding: 1vw;
   box-sizing: border-box;
-  width: 70em;
-
+  width: var(--board-width);
+  max-width: 95vw;
   clip-path: polygon(
     13.5% 0%,
-    /* Top-left inner corner */ 86.5% 0%,
-    /* Top-right inner corner */ 86.5% 22.5%,
-    /* Top of right-side notch */ 92.5% 22.5%,
-    /* Top-right outer corner */ 92.5% 77.5%,
-    /* Bottom-right outer corner */ 86.5% 77.5%,
-    /* Bottom of right-side notch */ 86.5% 100%,
-    /* Bottom-right inner corner */ 13.5% 100%,
-    /* Bottom-left inner corner */ 13.5% 77.5%,
-    /* Bottom of left-side notch */ 7.5% 77.5%,
-    /* Bottom-left outer corner */ 7.5% 22.5%,
-    /* Top-left outer corner */ 13.5% 22.5%
+    86.5% 0%,
+    86.5% 22.5%,
+    92.5% 22.5%,
+    92.5% 77.5%,
+    86.5% 77.5%,
+    86.5% 100%,
+    13.5% 100%,
+    13.5% 77.5%,
+    7.5% 77.5%,
+    7.5% 22.5%,
+    13.5% 22.5%
   );
+  transition: background-color 0.5s;
+}
+
+.puzzle-board.solved {
+  background: linear-gradient(270deg, #ffd700, #ff8c00, #2f7780, #00ffff);
+  background-size: 400% 400%;
+  animation: solve-gradient 3s ease;
 }
 
 .puzzle-row {
@@ -118,7 +169,7 @@ body {
   justify-content: center;
   margin: 0;
   line-height: 0;
-  height: 70px;
+  height: var(--tile-height);
 }
 .puzzle-row:not(:first-child) {
   margin-top: 0.2vw;
@@ -126,18 +177,11 @@ body {
 
 .tile-container {
   position: relative;
-  width: 60px;
+  width: var(--tile-width);
   height: 100%;
   margin: 0 0.1vw;
   user-select: none;
-}
-.tile-container .tile {
-  width: 100%;
-  height: 100%;
-  visibility: hidden;
-}
-.tile-container {
-  background-image: url("WoF Puzzle Board SVG.svg");
+  background-image: url("assets/images/WoF Puzzle Board SVG.svg");
   background-size: 100% 100%;
 }
 
@@ -163,11 +207,23 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: clamp(1.5rem, 3.5vw, 2.8rem);
+  font-size: var(--tile-font-size);
   color: black;
   background-color: white;
   opacity: 0;
   transition: opacity 0.1s ease;
+}
+
+.tile-letter.symbol {
+  background-color: transparent;
+  color: white;
+}
+
+.puzzle-board-glow-container {
+  width: var(--board-width);
+  max-width: 95vw;
+  margin: 0 auto;
+  animation: pulsing-glow 4s infinite ease-in-out;
 }
 .tile-container.revealed > .tile-letter {
   opacity: 1;
@@ -184,10 +240,15 @@ body {
   --rotation-angle: 0deg;
   transform: translateX(-50%) rotate(var(--rotation-angle));
   transform-origin: center;
-  transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: -1;
   height: clamp(35rem, 40vw, 45rem);
   width: clamp(35rem, 40vw, 45rem);
   bottom: calc(clamp(35rem, 40vw, 45rem) / -2);
+  animation: pulsing-glow 4s infinite ease-in-out;
+}
+
+#wheel.is-spinning {
+  transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #ptr {
@@ -209,5 +270,284 @@ body {
 }
 
 button {
-  font-family: IBM Plex Sans;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+#modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: none; /* Hidden by default */
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  width: 600px; /* Fixed width for consistency */
+  max-width: 90vw;
+  border: 2px solid #3498db;
+  text-align: center;
+}
+
+#intro-modal h1,
+#about-modal h1 {
+  margin-top: 0;
+  font-size: 2em;
+  color: #ffffff;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+#intro-modal p,
+#about-modal p {
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+.rules-container {
+  min-height: 150px; /* Keeps modal from resizing */
+}
+
+.rules-container ul {
+  text-align: left;
+  font-size: 1.1em;
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+.rules-container li {
+  margin-bottom: 10px;
+}
+
+.modal-footer-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+#start-game-btn,
+.close-modal-btn,
+#intro-about-btn {
+  padding: 12px 25px;
+  font-size: 1.6em;
+  font-weight: bold;
+  flex-grow: 1;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+#start-game-btn {
+  background-color: #27ae60;
+}
+#start-game-btn:hover {
+  background-color: #2ecc71;
+}
+
+#intro-about-btn {
+  background-color: #3498db;
+}
+#intro-about-btn:hover {
+  background-color: #5dade2;
+}
+
+.close-modal-btn {
+  background-color: #c0392b;
+  font-size: 1.8em;
+  width: 100%;
+}
+.close-modal-btn:hover {
+  background-color: #e74c3c;
+}
+
+/* --- NEW STYLES --- */
+.hidden {
+  display: none !important;
+}
+
+#game-mode-selection {
+  display: flex;
+  justify-content: center;
+  margin: 25px 0;
+  gap: 20px;
+}
+
+.mode-label {
+  padding: 10px 20px;
+  border: 2px solid #555;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.mode-label input[type="radio"] {
+  display: none;
+}
+
+.mode-label span {
+  font-size: 1.4em;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.mode-label:has(input:checked) {
+  background-color: #3498db;
+  border-color: #3498db;
+}
+
+#tossup-points-display,
+#avg-points-display {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+  color: #28a745;
+}
+
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2000;
+  pointer-events: none;
+  display: none;
+}
+
+#game-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 10px 30px;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  box-sizing: border-box;
+}
+
+#header-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #ffc107;
+  text-align: center;
+}
+
+#back-btn {
+  justify-self: start;
+}
+
+#about-btn {
+  justify-self: end;
+}
+
+#back-btn,
+#about-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2em;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+#back-btn:hover,
+#about-btn:hover {
+  background: #2980b9;
+}
+
+#solve-input-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+#solve-input-box {
+  background: #2c3e50;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  border: 2px solid #3498db;
+  position: relative;
+}
+
+#solve-input-box h2 {
+  font-size: 2em;
+  margin: 0;
+}
+
+#solve-input-box p {
+  font-size: 1.6em;
+  margin: 0.2em;
+  color: #28a745;
+  font-weight: bold;
+}
+
+#solve-input {
+  width: 100%;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 1.6em;
+  color: white;
+  margin: 20px 0;
+  border-radius: 5px;
+  border: none;
+  box-sizing: border-box;
+  font-family: "IBM Plex Sans", sans-serif;
+  outline: none;
+}
+
+#submit-solve-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.6em;
+  font-weight: 700;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#submit-solve-btn:hover {
+  background: #2ecc71;
+}
+
+.close-solve-box {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 3.4em;
+  color: #ecf0f1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
 }
