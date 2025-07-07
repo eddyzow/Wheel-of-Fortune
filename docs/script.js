@@ -512,7 +512,7 @@ $(function () {
       const elapsed = Date.now() - tossUpStartTime;
       const progress = elapsed / tossUpDuration;
       tossUpCurrentPoints = Math.round(
-        Math.max(0, 1000 * Math.pow(1 - progress, 0.6))
+        Math.max(0, 1000 * Math.pow(1 - progress, 0.33)) // lower is easier, higher is harder
       );
       $("#tossup-points").text(tossUpCurrentPoints);
     }, 50);
