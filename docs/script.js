@@ -50,6 +50,14 @@ $(function () {
     src: ["assets/sounds/tossupsolved.mp3"],
     volume: 1.0,
   });
+
+  const tossupSequence = [
+    "assets/sounds/tossup1.mp3",
+    "assets/sounds/tossup2.mp3",
+    "assets/sounds/tossup3.mp3",
+    "assets/sounds/tossup2.mp3",
+  ];
+
   const VOWELS = ["A", "E", "I", "O", "U"];
   const VOWEL_COST = 250;
 
@@ -68,6 +76,8 @@ $(function () {
   let allConsonantsAnnounced = false;
   let allConsonantsRevealed = false;
   let hasMillionDollarWedge = false;
+  let tossupMusicIndex = 0; // --- NEW: To track which song in the sequence to play ---
+  let currentTossupSound = null; // --- NEW: To hold the currently playing sound ---
 
   // --- Mode-specific State ---
   let gameMode = "classic";
@@ -371,7 +381,10 @@ $(function () {
   }
 
   function resetGame() {
-    tossupMusic.stop();
+    // --- FIX: Stop the current toss-up sound if it exists ---
+    if (currentTossupSound) {
+      currentTossupSound.stop();
+    }
     if (tossUpInterval) clearInterval(tossUpInterval);
     if (pointsUpdateInterval) clearInterval(pointsUpdateInterval);
 
@@ -472,7 +485,7 @@ $(function () {
       const elapsed = Date.now() - tossUpStartTime;
       const progress = elapsed / tossUpDuration;
       tossUpCurrentPoints = Math.round(
-        Math.max(0, 1000 * Math.pow(1 - progress, 0.5))
+        Math.max(0, 1000 * Math.pow(1 - progress, 0.7))
       );
       $("#tossup-points").text(tossUpCurrentPoints);
     }, 50);
@@ -525,7 +538,13 @@ $(function () {
       }
 
       $("#message-label").text("Press SPACE to buzz in!");
-      tossupMusic.play();
+      const songPath = tossupSequence[tossupMusicIndex];
+      currentTossupSound = new Howl({ src: [songPath], volume: 0.5 });
+      currentTossupSound.play();
+
+      // Move to the next song for the next round, looping back to the start
+      tossupMusicIndex = (tossupMusicIndex + 1) % tossupSequence.length;
+
       tossUpStartTime = Date.now();
       startTossUpIntervals();
     }, 2000);
@@ -559,7 +578,10 @@ $(function () {
   function handleTossUpSolve(isCorrect, points) {
     clearInterval(tossUpInterval);
     clearInterval(pointsUpdateInterval);
-    tossupMusic.stop();
+    // --- FIX: Stop the current toss-up sound if it exists ---
+    if (currentTossupSound) {
+      currentTossupSound.stop();
+    }
 
     if (isCorrect) {
       triggerSolveAnimation();
