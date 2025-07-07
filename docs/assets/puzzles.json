@@ -95,6 +95,10 @@
     "category": "MOVIE TITLE",
     "puzzle": "ETERNAL SUNSHINE OF THE SPOTLESS MIND"
   },
+  {
+    "category": "MOVIE TITLE",
+    "puzzle": "AVATAR: THE LAST AIRBENDER"
+  },
   { "category": "FUN & GAMES", "puzzle": "FINISHING A CROSSWORD PUZZLE" },
   { "category": "AROUND THE HOUSE", "puzzle": "A ROBOT VACUUM CLEANER" },
   { "category": "LANDMARK", "puzzle": "THE COLOSSEUM IN ROME" },
@@ -803,10 +807,7 @@
   { "category": "BEFORE & AFTER", "puzzle": "FAMILY GUY AND DOLLS" },
   { "category": "BEFORE & AFTER", "puzzle": "AMERICAN DAD JOKES" },
   { "category": "BEFORE & AFTER", "puzzle": "BOB'S BURGERS AND FRIES" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "AVATAR: THE LAST AIRBENDER AND THE WILLOW"
-  },
+
   { "category": "BEFORE & AFTER", "puzzle": "ADVENTURE TIME AFTER TIME" },
   { "category": "BEFORE & AFTER", "puzzle": "STEVEN UNIVERSE-AL STUDIOS" },
   { "category": "BEFORE & AFTER", "puzzle": "GRAVITY FALLS FROM GRACE" },
@@ -1084,7 +1085,6 @@
   { "category": "ON THE MAP", "puzzle": "THE ARCTIC CIRCLE" },
   { "category": "ON THE MAP", "puzzle": "PUGET SOUND" },
   { "category": "ON THE MAP", "puzzle": "BARCELONA SPAIN" },
-  { "category": "ON THE MAP", "puzzle": "TRANS-SIBERIAN RAILWAY" },
   { "category": "ON THE MAP", "puzzle": "NEWFOUNDLAND AND LABRADOR" },
   { "category": "ON THE MAP", "puzzle": "DEATH VALLEY NATIONAL PARK" },
   { "category": "ON THE MAP", "puzzle": "LUXEMBOURG" },

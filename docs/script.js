@@ -497,7 +497,6 @@ $(function () {
   }
 
   function resumeTossUpSequence() {
-    tossupMusic.play();
     const pausedDuration = Date.now() - tossUpPauseTime;
     tossUpStartTime += pausedDuration;
     startTossUpIntervals();
@@ -533,10 +532,13 @@ $(function () {
   }
 
   function buzzIn() {
+    // --- FIX: Play the ding sound on buzz-in ---
+    ding.play();
+
+    // The rest of the function correctly does not pause the music
     gameState = "tossup_paused";
     clearInterval(tossUpInterval);
     clearInterval(pointsUpdateInterval);
-    tossupMusic.pause();
     tossUpPauseTime = Date.now();
 
     showSolveInput((attempt) => {
@@ -567,9 +569,16 @@ $(function () {
       tossUpRoundsPlayed++;
       const averagePoints = Math.round(totalTossUpPoints / tossUpRoundsPlayed);
       $("#avg-points").text(averagePoints);
+
+      // --- FIX: Calculate solve time and update message ---
+      const solveTimeSeconds = (
+        (tossUpPauseTime - tossUpStartTime) /
+        1000
+      ).toFixed(2);
       $("#message-label").text(
-        `Correct for ${points} points! Press SPACE for next.`
+        `Solved in ${solveTimeSeconds}s! Press SPACE for next.`
       );
+
       gameState = "tossup_solved";
     } else {
       buzzer.play();

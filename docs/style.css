@@ -214,9 +214,10 @@ body {
   transition: opacity 0.1s ease;
 }
 
+/* --- FIX: Corrected styles for punctuation tiles --- */
 .tile-letter.symbol {
-  background-color: transparent;
-  color: white;
+  background-color: white; /* Restores the white tile background */
+  color: black; /* Makes the punctuation mark black */
 }
 
 .puzzle-board-glow-container {
