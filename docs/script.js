@@ -230,7 +230,31 @@ $(function () {
   }
 
   function triggerBigSolveAnimation() {
-    const duration = 10 * 1000; // The celebration will last for 5 seconds
+    let end = Date.now() + 3000;
+
+    let interval2 = setInterval(() => {
+      // Emit small burst from a random horizontal position
+      confetti({
+        particleCount: 8,
+        angle: 90, // Downward
+        spread: 1000,
+        origin: {
+          x: Math.random(), // Random horizontal position
+          y: -0.05, // Top of the screen
+        },
+        ticks: 600,
+        gravity: 3,
+        startVelocity: 10,
+        decay: 0.9,
+      });
+
+      // Stop the interval after the duration
+      if (Date.now() > end) {
+        clearInterval(interval2);
+      }
+    }, 100); // Fire every 100ms
+
+    const duration = 5 * 1000; // The celebration will last for 5 seconds
     const animationEnd = Date.now() + duration;
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
@@ -262,20 +286,7 @@ $(function () {
       );
 
       // --- CORRECTED RAIN EFFECT ---
-      confetti({
-        particleCount: 3,
-        angle: 90,
-        spread: 60,
-        origin: {
-          x: Math.random(),
-          y: -0.1,
-        },
-        // THE FIX: Increased lifespan and adjusted gravity/velocity
-        ticks: 300, // Make particles last long enough to fall down the screen
-        gravity: 0.4, // Let them fall a bit more naturally
-        startVelocity: 5, // Give a gentle initial push
-        decay: 0.98, // Prevent particles from slowing down too quickly
-      });
+      // Duration of the confetti rain (in milliseconds)
     }, 250);
   }
   function triggerSolveAnimation() {
