@@ -229,15 +229,6 @@ $(function () {
     }
   }
 
-  /**
-   * Creates a large, multi-colored fireworks display on the canvas for a major win.
-   */
-  /**
-   * Creates a fast and vibrant fireworks display using the canvas-confetti library.
-   */
-  /**
-   * Creates a large animation with both exploding fireworks and raining confetti.
-   */
   function triggerBigSolveAnimation() {
     const duration = 10 * 1000; // The celebration will last for 5 seconds
     const animationEnd = Date.now() + duration;
@@ -256,8 +247,7 @@ $(function () {
 
       const particleCount = 50 * (timeLeft / duration);
 
-      // --- EXISTING FIREWORKS ---
-      // This launches the exploding fireworks from the sides of the screen.
+      // --- Exploding Fireworks ---
       confetti(
         Object.assign({}, defaults, {
           particleCount,
@@ -271,15 +261,20 @@ $(function () {
         })
       );
 
-      // --- NEW RAIN EFFECT ---
-      // This makes a few particles "rain" from the top of the screen each time.
+      // --- CORRECTED RAIN EFFECT ---
       confetti({
-        particleCount: 2,
-        angle: 90, // Fall straight down
-        spread: 180, // Spread out across the top
-        origin: { y: -0.1 }, // Start just above the screen
-        gravity: 0.4, // Make them fall a little slower
-        startVelocity: 0, // Let them just drop
+        particleCount: 3,
+        angle: 90,
+        spread: 60,
+        origin: {
+          x: Math.random(),
+          y: -0.1,
+        },
+        // THE FIX: Increased lifespan and adjusted gravity/velocity
+        ticks: 300, // Make particles last long enough to fall down the screen
+        gravity: 0.4, // Let them fall a bit more naturally
+        startVelocity: 5, // Give a gentle initial push
+        decay: 0.98, // Prevent particles from slowing down too quickly
       });
     }, 250);
   }
