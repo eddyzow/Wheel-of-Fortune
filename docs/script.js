@@ -1417,7 +1417,7 @@ $(function () {
 setRandomWallpaper();
 
 function setRandomWallpaper() {
-  const wallpaperCount = 16;
+  const wallpaperCount = 17;
   const randomWallpaperNumber = Math.floor(Math.random() * wallpaperCount) + 1;
   const wallpaperUrl = `url('wallpapers/${randomWallpaperNumber}.png')`;
   $("#wallpaper").css("background-image", wallpaperUrl);
