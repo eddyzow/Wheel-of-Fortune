@@ -764,6 +764,7 @@ $(function () {
             // When the timer runs out
             if (timeLeft <= 0) {
               // **MODIFIED PART**
+              gameState = "round_ending";
               // Instead of having all the logic here, just call the new function.
               $("#message-label").html("Time's up!");
               failBonusRound();
@@ -1025,6 +1026,7 @@ $(function () {
     } else {
       // LOSS condition
       tensecond.stop();
+      gameState = "round_ending";
       buzzer.play();
       $("#message-label").text(`Sorry, that's not correct!`);
       failBonusRound();
