@@ -55,7 +55,7 @@
   { "category": "EVENT", "puzzle": "FAMILY REUNION" },
   { "category": "MOVIE TITLE", "puzzle": "THE WIZARD OF OZ" },
   { "category": "PEOPLE", "puzzle": "CROWD OF EXCITED FANS" },
-  { "category": "LIVING THINGS", "puzzle": "GIANT PANDA BEARS" },
+  { "category": "LIVING THING", "puzzle": "GIANT PANDA BEAR" },
   { "category": "IN THE KITCHEN", "puzzle": "SHARP SET OF KNIVES" },
   { "category": "PHRASE", "puzzle": "THE EARLY BIRD CATCHES THE WORM" },
   { "category": "FUN & GAMES", "puzzle": "THRILLING ROLLER COASTER RIDE" },
@@ -756,94 +756,38 @@
   { "category": "BEFORE & AFTER", "puzzle": "BLACK MIRROR MIRROR ON THE WALL" },
   { "category": "BEFORE & AFTER", "puzzle": "OZARK MOUNTAINS" },
   { "category": "BEFORE & AFTER", "puzzle": "SUCCESSION PLANNING" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "YELLOWSTONE NATIONAL PARK AND RECREATION"
-  },
-  { "category": "BEFORE & AFTER", "puzzle": "THE WHITE LOTUS POSITION" },
   { "category": "BEFORE & AFTER", "puzzle": "SQUID GAME OF LIFE" },
   { "category": "BEFORE & AFTER", "puzzle": "TIGER KING OF THE JUNGLE" },
-  { "category": "BEFORE & AFTER", "puzzle": "THE UMBRELLA ACADEMY AWARDS" },
-  { "category": "BEFORE & AFTER", "puzzle": "SEX EDUCATION DEPARTMENT" },
-  { "category": "BEFORE & AFTER", "puzzle": "THE BOYS AND GIRLS CLUB" },
-  { "category": "BEFORE & AFTER", "puzzle": "FLEABAG OF CHIPS" },
-  { "category": "BEFORE & AFTER", "puzzle": "PEAKY BLINDERS AS A BAT" },
-  { "category": "BEFORE & AFTER", "puzzle": "DOWNTON ABBEY ROAD" },
-  { "category": "BEFORE & AFTER", "puzzle": "SHERLOCK HOLMES ON THE RANGE" },
   { "category": "BEFORE & AFTER", "puzzle": "DOCTOR WHO'S ON FIRST" },
-  { "category": "BEFORE & AFTER", "puzzle": "THE X-FILES AND RECORDS" },
   { "category": "BEFORE & AFTER", "puzzle": "TWIN PEAKS AND VALLEYS" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "BUFFY THE VAMPIRE SLAYER OF GIANTS"
-  },
-  { "category": "BEFORE & AFTER", "puzzle": "THE WEST WING OF A BIRD" },
-  { "category": "BEFORE & AFTER", "puzzle": "SEINFELD OF DREAMS" },
-  { "category": "BEFORE & AFTER", "puzzle": "CHEERS TO YOU" },
-  { "category": "BEFORE & AFTER", "puzzle": "MASHED POTATOES AND GRAVY TRAIN" },
+
   { "category": "BEFORE & AFTER", "puzzle": "THE GOLDEN GIRLS SCOUT COOKIES" },
   {
     "category": "BEFORE & AFTER",
     "puzzle": "I LOVE LUCY IN THE SKY WITH DIAMONDS"
   },
   { "category": "BEFORE & AFTER", "puzzle": "THE BRADY BUNCH OF GRAPES" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "GILLIGAN'S ISLAND OF MISFIT TOYS"
-  },
-  { "category": "BEFORE & AFTER", "puzzle": "THE ADDAMS FAMILY VALUES" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "YOGI BEAR AND THE GREAT SMOKY MOUNTAINS"
-  },
-  { "category": "BEFORE & AFTER", "puzzle": "TOP CAT IN THE HAT" },
-  { "category": "BEFORE & AFTER", "puzzle": "RUGRATS TO RICHES" },
-  { "category": "BEFORE & AFTER", "puzzle": "HEY ARNOLD PALMER" },
-  { "category": "BEFORE & AFTER", "puzzle": "KING OF THE HILL OF BEANS" },
-  { "category": "BEFORE & AFTER", "puzzle": "SOUTH PARK AND RIDE" },
-  { "category": "BEFORE & AFTER", "puzzle": "FAMILY GUY AND DOLLS" },
-  { "category": "BEFORE & AFTER", "puzzle": "AMERICAN DAD JOKES" },
-  { "category": "BEFORE & AFTER", "puzzle": "BOB'S BURGERS AND FRIES" },
 
+  { "category": "BEFORE & AFTER", "puzzle": "THE ADDAMS FAMILY VALUES" },
+
+  { "category": "BEFORE & AFTER", "puzzle": "HEY ARNOLD PALMER" },
+  { "category": "BEFORE & AFTER", "puzzle": "SOUTH PARK AND RIDE" },
+  { "category": "BEFORE & AFTER", "puzzle": "AMERICAN DAD JOKES" },
   { "category": "BEFORE & AFTER", "puzzle": "ADVENTURE TIME AFTER TIME" },
-  { "category": "BEFORE & AFTER", "puzzle": "STEVEN UNIVERSE-AL STUDIOS" },
   { "category": "BEFORE & AFTER", "puzzle": "GRAVITY FALLS FROM GRACE" },
-  { "category": "BEFORE & AFTER", "puzzle": "KIM POSSIBLE DREAM" },
   { "category": "BEFORE & AFTER", "puzzle": "THE MAGIC SCHOOL BUS STOP" },
-  { "category": "BEFORE & AFTER", "puzzle": "ROCKY MOUNTAIN HIGH SCHOOL" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "JINGLE BELL ROCKY ROAD ICE CREAM"
-  },
   { "category": "BEFORE & AFTER", "puzzle": "SILENT NIGHT AT THE MUSEUM" },
   { "category": "BEFORE & AFTER", "puzzle": "DECK THE HALLS OF IVY" },
   { "category": "BEFORE & AFTER", "puzzle": "FROSTY THE SNOWMAN OF THE YEAR" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "RUDOLPH THE RED-NOSED REINDEER GAMES"
-  },
   {
     "category": "BEFORE & AFTER",
     "puzzle": "SANTA CLAUS IS COMING TO TOWN HALL"
   },
   {
     "category": "BEFORE & AFTER",
-    "puzzle": "WINTER WONDERLAND OF OPPORTUNITY"
-  },
-  {
-    "category": "BEFORE & AFTER",
     "puzzle": "THE TWELVE DAYS OF CHRISTMAS VACATION"
   },
   { "category": "BEFORE & AFTER", "puzzle": "JOY TO THE WORLD WIDE WEB" },
-  { "category": "BEFORE & AFTER", "puzzle": "THE FIRST NOEL COWARD" },
-  { "category": "BEFORE & AFTER", "puzzle": "WE THREE KINGS OF LEON" },
-  { "category": "BEFORE & AFTER", "puzzle": "GOOD KING WENCESLAS VEGAS" },
-  { "category": "BEFORE & AFTER", "puzzle": "THE LITTLE DRUMMER BOY GEORGE" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "THE NUTCRACKER SUITE LIFE OF ZACK & CODY"
-  },
-  { "category": "BEFORE & AFTER", "puzzle": "CHRISTMAS STORY TIME" },
   { "category": "BEFORE & AFTER", "puzzle": "ELF ON A SHELF LIFE" },
   { "category": "BEFORE & AFTER", "puzzle": "MIRACLE ON 34TH STREET FIGHTER" },
   {
@@ -851,7 +795,6 @@
     "puzzle": "IT'S A WONDERFUL LIFE OF THE PARTY"
   },
   { "category": "BEFORE & AFTER", "puzzle": "THE POLAR EXPRESS YOURSELF" },
-  { "category": "BEFORE & AFTER", "puzzle": "SCROOGE MCDUCK DYNASTY" },
   {
     "category": "BEFORE & AFTER",
     "puzzle": "THE GRINCH WHO STOLE CHRISTMAS PRESENT"
@@ -860,12 +803,7 @@
     "category": "BEFORE & AFTER",
     "puzzle": "CHARLIE BROWN CHRISTMAS TREE FARM"
   },
-  { "category": "BEFORE & AFTER", "puzzle": "LOVE ACTUALLY, I'M NOT SURE" },
   { "category": "BEFORE & AFTER", "puzzle": "JINGLE ALL THE WAY TO THE BANK" },
-  {
-    "category": "BEFORE & AFTER",
-    "puzzle": "THE NIGHTMARE BEFORE CHRISTMAS EVE"
-  },
   {
     "category": "BEFORE & AFTER",
     "puzzle": "THE MUPPET CHRISTMAS CAROL OF THE BELLS"
@@ -878,8 +816,6 @@
   },
   { "category": "BEFORE & AFTER", "puzzle": "THE LION KING OF THE HILL" },
   { "category": "BEFORE & AFTER", "puzzle": "BREAKING BAD TO THE BONE" },
-  { "category": "BEFORE & AFTER", "puzzle": "GAME OF THRONES OF POWER" },
-  { "category": "BEFORE & AFTER", "puzzle": "TO KILL A MOCKINGBIRD LANE" },
   {
     "category": "BEFORE & AFTER",
     "puzzle": "GONE WITH THE WIND BENEATH MY WINGS"
@@ -891,9 +827,7 @@
   },
   { "category": "BEFORE & AFTER", "puzzle": "BEAUTY AND THE BEAST MODE" },
   { "category": "BEFORE & AFTER", "puzzle": "LIFE OF PI DAY" },
-  { "category": "BEFORE & AFTER", "puzzle": "STRANGER THINGS FALL APART" },
   { "category": "BEFORE & AFTER", "puzzle": "THE SOUND OF MUSIC TO MY EARS" },
-  { "category": "BEFORE & AFTER", "puzzle": "GUARDIANS OF THE GALAXY QUEST" },
   {
     "category": "BEFORE & AFTER",
     "puzzle": "THE DARK KNIGHT IN SHINING ARMOR"
@@ -1023,7 +957,7 @@
   { "category": "FOOD & DRINK", "puzzle": "FLAME-GRILLED TOMAHAWK STEAK" },
   { "category": "FOOD & DRINK", "puzzle": "HAWAIIAN LOCO MOCO" },
   { "category": "FOOD & DRINK", "puzzle": "BUTTERED ENGLISH MUFFINS" },
-  { "category": "FOOD & DRINK", "puzzle": "CHOCOLATE-DIPPED STRAWBERRIES" },
+  { "category": "FOOD & DRINK", "puzzle": "CHOCOLATE DIPPED STRAWBERRIES" },
   { "category": "FOOD & DRINK", "puzzle": "EGGPLANT PARMESAN BAKE" },
   { "category": "FOOD & DRINK", "puzzle": "COCONUT CURRY LENTIL SOUP" },
   { "category": "FOOD & DRINK", "puzzle": "FRESH-CUT FRUIT SALAD" },

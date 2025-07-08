@@ -1,21 +1,66 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=Roboto:wght@800&display=swap");
 
 :root {
-  --board-width: 70em;
-  --tile-height: 5vw; /* Base height on viewport width */
-  --tile-width: calc(var(--tile-height) * 0.85);
-  --tile-font-size: calc(var(--tile-height) * 0.7);
+  --tile-height: 70px;
+  --tile-width: 60px;
+  --tile-font-size: 48px;
+  --board-width: calc(var(--tile-width) * 17.25); /* 14 tiles max + buffer */
 }
 
-@media (min-width: 1400px) {
-  :root {
-    --tile-height: 70px; /* Cap the size on large screens */
-  }
+.puzzle-row:not(:first-child) {
+  margin-top: 2px;
 }
-@media (max-width: 800px) {
-  :root {
-    --tile-height: 6vw;
-  }
+
+.puzzle-board-border {
+  position: relative;
+  padding: 40px;
+  background-color: #dbdbdb; /* Border color */
+  clip-path: polygon(
+    11.5% 6%,
+    88.5% 6%,
+    88.5% 24%,
+    94.5% 24%,
+    94.5% 76%,
+    88.5% 76%,
+    88.5% 94%,
+    11.5% 94%,
+    11.5% 76%,
+    5.5% 76%,
+    5.5% 24%,
+    11.5% 24%
+  );
+}
+
+.puzzle-board-border.buzzed {
+  background: #0097ff;
+  background-size: 400% 400%;
+  animation: buzz-flash 1s cubic-bezier(0, 0.95, 0.05, 1) infinite;
+}
+
+.puzzle-board-border.solving {
+  background: linear-gradient(90deg, #dbdbdb, #1eff00, #0099ff, #dbdbdb);
+  background-size: 400% 400%;
+  animation: solve-gradient 5s infinite;
+}
+
+.puzzle-board.solved {
+  background: linear-gradient(270deg, #ffd700, #ffa600, #2f8033, #00b6b6);
+  background-size: 400% 400%;
+  animation: solve-gradient 2.5s ease-in;
+}
+
+.puzzle-board-border.solved-bonus {
+  background: linear-gradient(45deg, #8ce2e2, #75c579, #2bb632, #2bd1d1);
+  background-size: 400% 400%;
+  animation: solve-gradient-backwards 2s infinite ease-in-out;
+  background-position: 100% 50%;
+}
+
+.puzzle-board-border.solved {
+  background: linear-gradient(90deg, #2bb632, #2bd1d1, #dbdbdb, #dbdbdb);
+  background-size: 400% 400%;
+  animation: solve-gradient-backwards 2.5s ease-out;
+  background-position: 100% 50%;
 }
 
 html,
@@ -42,7 +87,19 @@ body {
   gap: 20px;
   width: 100%;
   transition: filter 0.5s ease;
-  padding-top: 85px; /* Increased for more space */
+  padding-top: 120px; /* Increased for more space */
+}
+
+@keyframes buzz-flash {
+  0% {
+    background-color: #dbdbdb;
+  }
+  50% {
+    background-color: #0097ff;
+  }
+  100% {
+    background-color: #dbdbdb;
+  }
 }
 
 @keyframes pulsing-glow {
@@ -54,6 +111,18 @@ body {
   }
   100% {
     filter: drop-shadow(0 0 8px #2f7780);
+  }
+}
+
+@keyframes solve-gradient-backwards {
+  0% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
   }
 }
 
@@ -71,19 +140,22 @@ body {
 
 .category-label {
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
   font-family: "IBM Plex Sans", sans-serif;
   text-transform: uppercase;
+  border: 4px solid rgba(167, 167, 167, 0.5);
   background-color: #00404093;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  font-size: clamp(1.1rem, 2.5vw, 1.75rem);
-  padding: 0.5em 1.5em;
+  font-size: 2.4rem;
+  padding: 12px 24px;
   letter-spacing: 0.05em;
 }
 
 .game-info-and-controls {
   display: flex;
+  border: 4px solid rgba(167, 167, 167, 0.5);
+  height: 100px;
   justify-content: space-between;
   align-items: center;
   width: clamp(45rem, 90vw, 80rem); /* Increased max-width */
@@ -94,7 +166,7 @@ body {
 }
 
 .info-display {
-  font-size: clamp(1rem, 1.5vw, 1.4rem);
+  font-size: 1.8rem;
   font-weight: 500;
   text-align: center;
 }
@@ -109,8 +181,15 @@ body {
   flex: 2;
   color: #ffc107;
   font-weight: bold;
-  min-height: 1.5em;
+
+  /* These rules create the alignment */
+  display: flex;
+  flex-direction: row; /* This puts the items on the same line */
+  align-items: center; /* This keeps them vertically centered next to each other */
+  justify-content: center;
+  gap: 15px; /* This adds a nice space between the two text elements */
 }
+
 #solve-btn-container {
   flex: 1;
   text-align: right;
@@ -137,31 +216,23 @@ body {
 .puzzle-board {
   position: relative;
   background-color: #2f7780;
-  padding: 1vw;
+  padding: 24px;
   box-sizing: border-box;
-  width: var(--board-width);
-  max-width: 95vw;
   clip-path: polygon(
-    13.5% 0%,
-    86.5% 0%,
-    86.5% 22.5%,
-    92.5% 22.5%,
-    92.5% 77.5%,
-    86.5% 77.5%,
-    86.5% 100%,
-    13.5% 100%,
-    13.5% 77.5%,
-    7.5% 77.5%,
-    7.5% 22.5%,
-    13.5% 22.5%
+    10% 0%,
+    90% 0%,
+    90% 22.5%,
+    96.5% 22.5%,
+    96.5% 77.5%,
+    90% 77.5%,
+    90% 100%,
+    10% 100%,
+    10% 77.5%,
+    3.5% 77.5%,
+    3.5% 22.5%,
+    10% 22.5%
   );
   transition: background-color 0.5s;
-}
-
-.puzzle-board.solved {
-  background: linear-gradient(270deg, #ffd700, #ff8c00, #2f7780, #00ffff);
-  background-size: 400% 400%;
-  animation: solve-gradient 3s ease;
 }
 
 .puzzle-row {
@@ -171,15 +242,11 @@ body {
   line-height: 0;
   height: var(--tile-height);
 }
-.puzzle-row:not(:first-child) {
-  margin-top: 0.2vw;
-}
 
 .tile-container {
   position: relative;
   width: var(--tile-width);
   height: 100%;
-  margin: 0 0.1vw;
   user-select: none;
   background-image: url("assets/images/WoF Puzzle Board SVG.svg");
   background-size: 100% 100%;
@@ -222,7 +289,6 @@ body {
 
 .puzzle-board-glow-container {
   width: var(--board-width);
-  max-width: 95vw;
   margin: 0 auto;
   animation: pulsing-glow 4s infinite ease-in-out;
 }
@@ -257,7 +323,7 @@ body {
   left: 50%;
   --rotation-angle: 0deg;
   transform: translateX(-50%) rotate(var(--rotation-angle));
-  bottom: clamp(250px, 18vw, 340px);
+  bottom: clamp(250px, 16vw, 320px);
   width: 4vw;
   z-index: 10;
 }
@@ -300,6 +366,12 @@ button {
   max-width: 90vw;
   border: 2px solid #3498db;
   text-align: center;
+}
+
+#intro-modal {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  transition: all 0.5s ease;
 }
 
 #intro-modal h1,
@@ -437,8 +509,9 @@ button {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 10px 30px;
+  padding: 20px 20px;
   background: rgba(0, 0, 0, 0.5);
+  border-bottom: 3px solid white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   z-index: 100;
   box-sizing: border-box;
@@ -551,4 +624,136 @@ button {
   border: none;
   cursor: pointer;
   line-height: 1;
+}
+
+#bonus-round-info {
+  width: clamp(45rem, 90vw, 80rem);
+  background: #1c1c1ccc;
+  border-radius: 10px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 10px;
+}
+#bonus-round-message {
+  font-size: 1.4em;
+  color: #ffc107;
+  font-weight: bold;
+}
+#bonus-letters-picked {
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 0.2em;
+  font-size: 1.5em;
+  background-color: #0000005e;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+#timeLeft {
+  color: white;
+  padding: 0px 8px;
+  position: relative;
+}
+
+#player-picks-display {
+  color: white;
+  padding: 0; /* Reset previous padding */
+  font-size: 2.5rem; /* Make the picked letters much larger */
+  line-height: 1.1; /* Adjust line height for the larger font */
+}
+
+/* --- Bottom Solve Bar Styles --- */
+#bottom-solve-bar {
+  position: fixed;
+  bottom: 40px; /* Moves the bar up from the edge */
+  left: 50%; /* Helps with centering */
+  width: 90vw; /* Responsive width */
+  max-width: 900px; /* Maximum width on large screens */
+  background: rgba(28, 28, 28, 0.95);
+  border: 2px solid rgb(170, 170, 170);
+  border-radius: 12px; /* Added for a softer look */
+  padding: 15px;
+  box-sizing: border-box;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Start off-screen and horizontally centered */
+  transform: translate(-50%, 150%);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#bottom-solve-bar.visible {
+  /* Slide into its final, centered position */
+  transform: translate(-50%, 0);
+}
+
+#solve-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 800px;
+  padding-right: 40px; /* ADD THIS LINE */
+}
+
+#solve-bar-title,
+#solve-bar-points {
+  margin: 0;
+  color: #ffc107;
+  font-size: 1.5em;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+#solve-bar-points {
+  color: #28a745;
+}
+
+#solve-bar-input {
+  flex-grow: 1;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 1.4em;
+  color: white;
+  border-radius: 5px;
+  border: 1px solid #555;
+  box-sizing: border-box;
+  font-family: "IBM Plex Sans", sans-serif;
+  outline: none;
+  text-align: center;
+}
+
+#solve-bar-submit-btn {
+  padding: 10px 20px;
+  font-size: 1.2em;
+  font-weight: 700;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#solve-bar-submit-btn:hover {
+  background: #2ecc71;
+}
+
+#solve-bar-close-btn {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  font-size: 4em;
+  color: #ffffff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 10px;
+}
+
+#solve-bar-close-btn:hover {
+  color: white;
 }

@@ -26,7 +26,8 @@ $(function () {
     600,
     "WILD CARD",
   ];
-
+  // Add with your other global variables
+  let tossupLettersRevealed = 0;
   const ding = new Howl({ src: ["assets/sounds/ding.mp3"], volume: 1.0 });
   const spin = new Howl({ src: ["assets/sounds/spin.mp3"], volume: 1.0 });
   const reveal = new Howl({ src: ["assets/sounds/reveal.mp3"], volume: 1.0 });
@@ -50,6 +51,30 @@ $(function () {
     src: ["assets/sounds/tossupsolved.mp3"],
     volume: 1.0,
   });
+  const bonus = new Howl({
+    src: ["assets/sounds/bonus.mp3"],
+    volume: 1.0,
+    loop: true,
+  });
+  const bonus2 = new Howl({
+    src: ["assets/sounds/bonus2.mp3"],
+    volume: 1.0,
+    loop: true,
+  });
+  const bonuswin = new Howl({
+    src: ["assets/sounds/bonuswin.mp3"],
+    volume: 1.0,
+    loop: true,
+  });
+  const bonuslose = new Howl({
+    src: ["assets/sounds/bonuslose.mp3"],
+    volume: 1.0,
+    loop: true,
+  });
+  const tensecond = new Howl({
+    src: ["assets/sounds/10second.mp3"],
+    volume: 1.0,
+  });
   const tossupSounds = [
     new Howl({ src: ["assets/sounds/tossup1.mp3"], volume: 0.5 }),
     new Howl({ src: ["assets/sounds/tossup2.mp3"], volume: 0.5 }),
@@ -68,6 +93,7 @@ $(function () {
 
   // --- Game State Variables ---
   let allPuzzles = [];
+  let bonusPuzzles = []; // ADD THIS NEW VARIABLE
   let currentPuzzle = {};
   let guessable = 0;
   let free = 0;
@@ -76,6 +102,8 @@ $(function () {
   let playerScore = 0;
   let currentSpinValue = 0;
   let gameState = "intro";
+  let bonusPicks = { consonants: [], vowel: "" };
+  const GIVEN_LETTERS = ["R", "S", "T", "L", "N", "E"];
   let isFreePlay = false;
   let allVowelsAnnounced = false;
   let allConsonantsAnnounced = false;
@@ -106,7 +134,9 @@ $(function () {
     // When this sound finishes, automatically play the next one
     currentTossupSound.once("end", playNextTossupSong);
 
-    currentTossupSound.play();
+    if (gameMode == "tossup") {
+      currentTossupSound.play();
+    }
 
     // Increment the index for the next song in the loop
     tossupMusicIndex = (tossupMusicIndex + 1) % tossupSequence.length;
@@ -199,6 +229,60 @@ $(function () {
     }
   }
 
+  /**
+   * Creates a large, multi-colored fireworks display on the canvas for a major win.
+   */
+  /**
+   * Creates a fast and vibrant fireworks display using the canvas-confetti library.
+   */
+  /**
+   * Creates a large animation with both exploding fireworks and raining confetti.
+   */
+  function triggerBigSolveAnimation() {
+    const duration = 10 * 1000; // The celebration will last for 5 seconds
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function () {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      // --- EXISTING FIREWORKS ---
+      // This launches the exploding fireworks from the sides of the screen.
+      confetti(
+        Object.assign({}, defaults, {
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        })
+      );
+      confetti(
+        Object.assign({}, defaults, {
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        })
+      );
+
+      // --- NEW RAIN EFFECT ---
+      // This makes a few particles "rain" from the top of the screen each time.
+      confetti({
+        particleCount: 2,
+        angle: 90, // Fall straight down
+        spread: 180, // Spread out across the top
+        origin: { y: -0.1 }, // Start just above the screen
+        gravity: 0.4, // Make them fall a little slower
+        startVelocity: 0, // Let them just drop
+      });
+    }, 250);
+  }
   function triggerSolveAnimation() {
     const canvas = document.getElementById("particle-canvas");
     const ctx = canvas.getContext("2d");
@@ -354,34 +438,23 @@ $(function () {
     free = 1;
     updateUIForNewTurn();
   }
-
-  function showSolveInput(callback) {
-    solveCallback = callback;
-    $("#solve-input-container").show();
-    $("#solve-input").focus();
-    if (gameMode === "tossup") {
-      $("#solve-points-display")
-        .text(`For ${tossUpCurrentPoints} points!`)
-        .show();
-    } else {
-      $("#solve-points-display").hide();
-    }
-  }
-
   function solvePuzzle() {
-    if (free === 0 && guessable === 0) return;
+    console.log("Is this thing on? 1");
     showSolveInput((attempt) => {
+      console.log("Is this thing on? 2");
+
       const solutionAlphaOnly = currentPuzzle.puzzle
         .toUpperCase()
         .replace(/[^A-Z]/g, "");
       const attemptAlphaOnly = attempt.toUpperCase().replace(/[^A-Z]/g, "");
 
-      if (attemptAlphaOnly === solutionAlphaOnly) {
+      if (attemptAlphaOnly && attemptAlphaOnly === solutionAlphaOnly) {
         triggerSolveAnimation();
         solved.play();
         $("#message-label").text(
           `You solved it! It was: "${currentPuzzle.puzzle}"`
         );
+        $(".puzzle-board-border").addClass("solved");
         $(".puzzle-board").addClass("solved");
         $(".tile-container").each(function () {
           if ($(this).data("letter")) {
@@ -400,20 +473,28 @@ $(function () {
       } else {
         buzzer.play();
         $("#message-label").text("That is incorrect. Next player spins.");
+        // NOTE: This part is important. A wrong answer should keep it the current player's turn
+        // to spin again, so 'free' should be set back to 1.
         free = 1;
         guessable = 0;
-        updateUIForNewTurn();
+        updateUIForNewTurn(); // This will re-enable the solve button
         setReadyMessage();
       }
     });
   }
-
   function resetGame() {
+    gameMode = "none";
     // --- FIX: Stop the current toss-up sound if it exists ---
     stopTossupMusic();
+    bonus.stop();
+    bonuswin.stop();
+    bonuslose.stop();
+    bonus2.stop();
+    tensecond.stop();
 
     if (tossUpInterval) clearInterval(tossUpInterval);
     if (pointsUpdateInterval) clearInterval(pointsUpdateInterval);
+    $(".puzzle-board-border").removeClass("solved-bonus");
 
     gameState = "intro";
     $(".main-container, #game-header").addClass("hidden");
@@ -432,6 +513,7 @@ $(function () {
     allConsonantsRevealed = false;
     hasMillionDollarWedge = false;
     $(".puzzle-board").removeClass("solved");
+    $(".puzzle-board-border").removeClass("solved");
 
     $(".tile-container").each(function () {
       const letterSpan = $(this).find(".tile-letter");
@@ -439,14 +521,18 @@ $(function () {
       $(this).data("letter", "").removeClass("revealed unrevealed");
     });
 
-    currentPuzzle = allPuzzles[Math.floor(Math.random() * allPuzzles.length)];
-    $("#category-label").text(currentPuzzle.category);
-    layoutPuzzle();
-
     if (gameMode === "classic") {
+      currentPuzzle = allPuzzles[Math.floor(Math.random() * allPuzzles.length)];
+      $("#category-label").text(currentPuzzle.category);
       setupClassicRound();
+      layoutPuzzle();
+    } else if (gameMode === "bonus") {
+      setupBonusRound();
     } else {
+      currentPuzzle = allPuzzles[Math.floor(Math.random() * allPuzzles.length)];
+      $("#category-label").text(currentPuzzle.category);
       setupTossUpRound();
+      layoutPuzzle();
     }
   }
 
@@ -507,40 +593,252 @@ $(function () {
 
   function startTossUpIntervals() {
     gameState = "tossup_revealing";
+    $(".puzzle-board-border").addClass("solving");
 
     pointsUpdateInterval = setInterval(() => {
       const elapsed = Date.now() - tossUpStartTime;
-      const progress = elapsed / tossUpDuration;
-      tossUpCurrentPoints = Math.round(
-        Math.max(0, 1000 * Math.pow(1 - progress, 0.33)) // lower is easier, higher is harder
-      );
+      const progress = Math.min(1, elapsed / tossUpDuration);
+      tossUpCurrentPoints = Math.round(1000 * Math.pow(1 - progress, 0.7));
       $("#tossup-points").text(tossUpCurrentPoints);
-    }, 50);
 
-    const revealLoop = () => {
-      if (remainingLetterTiles.length > 0) {
-        const tileToReveal = remainingLetterTiles.pop();
-        revealLetter(tileToReveal, $(tileToReveal).data("letter"), false);
-      }
+      // THE FIX: Adding "+ 1" makes the first letter appear at time zero.
+      const lettersThatShouldBeRevealed = Math.floor(elapsed / 1000) + 1;
 
-      // --- FIX: This block now ends the round immediately ---
-      if (remainingLetterTiles.length === 0) {
-        clearInterval(tossUpInterval);
-        // The 1-second setTimeout was removed from here.
-        if (gameState === "tossup_revealing") {
-          handleTossUpSolve(false, 0);
+      // This loop now correctly reveals letters starting immediately.
+      while (tossupLettersRevealed < lettersThatShouldBeRevealed) {
+        if (remainingLetterTiles.length > 0) {
+          tossupRevealLoop();
+          tossupLettersRevealed++;
+        } else {
+          break;
         }
       }
-    };
 
-    revealLoop(); // Reveal first letter immediately
-    tossUpInterval = setInterval(revealLoop, 1000);
+      if (tossUpCurrentPoints <= 0 && gameState === "tossup_revealing") {
+        handleTossUpSolve(false, 0);
+      }
+    }, 50);
   }
-
   function resumeTossUpSequence() {
+    // This logic correctly calculates the pause duration
     const pausedDuration = Date.now() - tossUpPauseTime;
     tossUpStartTime += pausedDuration;
+
+    // Restart the single, unified timer
     startTossUpIntervals();
+  }
+
+  function handleBonusPick(letter) {
+    // Ignore invalid input
+    if (!letter.match(/^[A-Z]$/) || usedLetters.includes(letter)) {
+      buzzer.play(); // Play an error sound
+      return;
+    }
+
+    const isVowel = VOWELS.includes(letter);
+
+    if (isVowel) {
+      if (bonusPicks.vowel === "") {
+        bonusPicks.vowel = letter;
+      } else {
+        buzzer.play(); // Already picked a vowel
+        return;
+      }
+    } else {
+      if (bonusPicks.consonants.length < 3) {
+        bonusPicks.consonants.push(letter);
+      } else {
+        buzzer.play(); // Already picked 3 consonants
+        return;
+      }
+    }
+
+    usedLetters.push(letter);
+    ding.play(); // Play a success sound
+    updateBonusPicksDisplay();
+
+    // If all letters are chosen, start the final reveal
+    if (bonusPicks.consonants.length === 3 && bonusPicks.vowel !== "") {
+      gameState = "bonus_revealing_picks"; // Prevent more picks
+      setTimeout(revealPlayerPicks, 1000);
+    }
+  }
+
+  function updateBonusPicksDisplay() {
+    const consonantsStr = bonusPicks.consonants.join(" ");
+    const vowelStr = bonusPicks.vowel;
+
+    // --- NEW: Dynamic Instruction Logic ---
+    let instructionText = "Choose ";
+    const consonantsLeft = 3 - bonusPicks.consonants.length;
+    const vowelsLeft = bonusPicks.vowel === "" ? 1 : 0;
+    const parts = [];
+
+    // Add the consonant part if needed
+    if (consonantsLeft > 0) {
+      parts.push(`${consonantsLeft} consonant${consonantsLeft > 1 ? "s" : ""}`);
+    }
+
+    // Add the vowel part if needed
+    if (vowelsLeft > 0) {
+      parts.push(`${vowelsLeft} vowel`);
+    }
+
+    // Join the parts with "and"
+    instructionText += parts.join(" and ");
+    instructionText += ".";
+
+    // If all letters have been picked, the game will proceed, so this text won't be seen.
+    // This is just a fallback.
+    if (parts.length === 0) {
+      instructionText = "All letters selected!";
+    }
+    // --- End of New Logic ---
+
+    // Wrap each line in its own div for independent styling
+    const instructionHTML = `<div>${instructionText}</div>`;
+    const picksHTML = `<div id="player-picks-display">${consonantsStr} ${vowelStr}</div>`;
+
+    // Set the HTML of the message label
+    $("#message-label").html(instructionHTML + picksHTML);
+  }
+
+  /**
+   * Reveals the letters the player picked on the puzzle board.
+   */
+  function revealPlayerPicks() {
+    const playerLetters = [...bonusPicks.consonants, bonusPicks.vowel];
+    const tilesToRevealQueue = [];
+
+    playerLetters.forEach((letter) => {
+      $(".tile-container").each(function () {
+        if ($(this).data("letter") === letter) {
+          tilesToRevealQueue.push(this);
+        }
+      });
+    });
+
+    // This is the helper function inside your main setupBonusRound function
+    function revealNextInQueue() {
+      if (tilesToRevealQueue.length > 0) {
+        const tile = tilesToRevealQueue.shift();
+        revealLetterWithAnimation(tile, $(tile).data("letter"));
+        setTimeout(revealNextInQueue, 1000); // Wait 1 second before revealing the next one
+      } else {
+        // All letters have been revealed, so start the final timer.
+        $("#message-label").text(
+          "All your letters are revealed. Get ready to solve!"
+        );
+
+        setTimeout(function () {
+          bonus2.stop();
+          tensecond.play();
+
+          // --- TIMER LOGIC STARTS HERE ---
+
+          gameState = "bonus_waiting_for_buzz"; // Allow spacebar to be used for buzzing
+          let timeLeft = 10;
+          $(".puzzle-board-border").addClass("solving");
+
+          // Update the message label with the current time left
+          const updateTimerDisplay = () => {
+            $("#message-label").html(
+              `Press SPACE to buzz in! <span id='timeLeft'>Time Left: ${timeLeft}</span>`
+            );
+          };
+
+          updateTimerDisplay(); // Show the initial time
+
+          // Start the countdown
+          bonusTimerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+
+            // When the timer runs out
+            // When the timer runs out
+            if (timeLeft <= 0) {
+              // **MODIFIED PART**
+              // Instead of having all the logic here, just call the new function.
+              $("#message-label").html("Time's up!");
+              failBonusRound();
+            }
+          }, 1000);
+        }, 3000); // 3-second pause before the timer starts
+      }
+    }
+    revealNextInQueue();
+  }
+
+  function setupBonusRound() {
+    stopTossupMusic();
+    bonus.play();
+
+    currentPuzzle =
+      bonusPuzzles[Math.floor(Math.random() * bonusPuzzles.length)];
+
+    $("#category-label").text(currentPuzzle.category);
+    layoutPuzzle();
+
+    // Reset and populate used letters with the given ones
+    usedLetters = [...GIVEN_LETTERS];
+    bonusPicks = { consonants: [], vowel: "" }; // Reset picks for a new round
+
+    $("#message-label").text("Revealing letters R, S, T, L, N, and E.");
+    const tilesToRevealQueue = [];
+
+    GIVEN_LETTERS.forEach((letter) => {
+      $(".tile-container").each(function () {
+        if ($(this).data("letter") === letter) {
+          tilesToRevealQueue.push(this);
+        }
+      });
+    });
+
+    /**
+     * Updates the message label to show the letters the player has picked.
+     */
+
+    function revealNextInQueue() {
+      if (tilesToRevealQueue.length > 0) {
+        const tile = tilesToRevealQueue.shift();
+        revealLetterWithAnimation(tile, $(tile).data("letter"));
+        setTimeout(revealNextInQueue, 1000);
+      } else {
+        // **MODIFIED PART**
+        // When done, update the UI and set the game state for picking
+        updateBonusPicksDisplay(); // Initial display
+        gameState = "bonus_picking_letters";
+        bonus.stop();
+        bonus2.play();
+      }
+    }
+
+    setTimeout(revealNextInQueue, 2000);
+  }
+
+  /**
+   * Reveals a single letter on a tile with a blue flip animation.
+   * NOTE: You will also need this helper function in your script if you don't have it.
+   * @param {HTMLElement} tileContainer - The DOM element for the tile.
+   * @param {string} letter - The letter to reveal.
+   */
+  function revealLetterWithAnimation(tileContainer, letter) {
+    const letterSpan = $(tileContainer).find(".tile-letter");
+
+    // Don't re-animate an already revealed tile
+    if (letterSpan.text() !== "" || $(tileContainer).hasClass("unrevealed")) {
+      return;
+    }
+
+    // Add a class that triggers a CSS transition to turn the tile blue
+    $(tileContainer).addClass("unrevealed");
+    ding.play();
+    // After 800ms, the animation is complete, so we set the letter text
+    setTimeout(() => {
+      letterSpan
+        .css({ "background-color": "white", color: "black" })
+        .text(letter.toUpperCase());
+    }, 1200);
   }
 
   function setupTossUpRound() {
@@ -548,20 +846,16 @@ $(function () {
     $("#tossup-points").text(1000);
     reveal.play();
 
+    tossupLettersRevealed = 0;
+
     setTimeout(() => {
       remainingLetterTiles = $(".tile-container")
         .filter(function () {
           const letter = $(this).data("letter");
-          return letter && letter.match(/[A-Z0-9]/); // Only guessable tiles
+          return letter && letter.match(/[A-Z0-9]/);
         })
         .get();
 
-      // --- FIX: Correctly calculate the duration for point decay ---
-      // The duration is the time between the first and last letter reveal.
-      const letterCount = remainingLetterTiles.length;
-      tossUpDuration = letterCount > 1 ? (letterCount - 1) * 1000 : 1;
-
-      // Shuffle the tiles
       for (let i = remainingLetterTiles.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [remainingLetterTiles[i], remainingLetterTiles[j]] = [
@@ -570,20 +864,24 @@ $(function () {
         ];
       }
 
+      // THE FIX: Calculate duration based on (letters - 1) seconds.
+      // This ensures the timer and the letter reveals finish at the same time.
+      tossUpDuration = (remainingLetterTiles.length - 1) * 1000;
+
       $("#message-label").text("Press SPACE to buzz in!");
       playNextTossupSong();
       tossUpStartTime = Date.now();
       startTossUpIntervals();
     }, 2000);
   }
-
   function buzzIn() {
-    // --- FIX: Play the ding sound on buzz-in ---
     ding.play();
-
-    // The rest of the function correctly does not pause the music
     gameState = "tossup_paused";
-    clearInterval(tossUpInterval);
+    $(".puzzle-board-border").removeClass("solving");
+
+    $(".puzzle-board-border").addClass("buzzed");
+
+    // We only need to clear the one unified timer now
     clearInterval(pointsUpdateInterval);
     tossUpPauseTime = Date.now();
 
@@ -598,8 +896,216 @@ $(function () {
       } else {
         buzzer.play();
         resumeTossUpSequence();
+        $(".puzzle-board-border").addClass("solving");
+
+        $(".puzzle-board-border").removeClass("buzzed");
       }
     });
+  }
+
+  /**
+   * Hides the bottom solve bar and handles game-specific UI changes.
+   */
+  function hideSolveInput() {
+    $(".puzzle-board-border").removeClass("buzzed");
+    const solveBar = $("#bottom-solve-bar");
+    solveBar.removeClass("visible");
+
+    // After the slide-out animation finishes, re-apply the .hidden class
+
+    // If in classic mode, fade the wheel back in
+    if (gameMode === "classic") {
+      $("#wheel, #ptr").fadeIn();
+    } else {
+      $(".puzzle-board-border").addClass("solving");
+    }
+  }
+
+  /**
+   * Shows the bottom solve bar and prepares it for the current game mode.
+   * @param {function} callback The function to execute when the answer is submitted.
+   */
+  function showSolveInput(callback) {
+    $(".puzzle-board-border").addClass("buzzed");
+    const solveBar = $("#bottom-solve-bar");
+    solveBar.addClass("visible");
+    solveCallback = callback;
+
+    $("#solve-bar-input").val("").focus();
+    $("#solve-bar-title").text("Solve!");
+
+    if (gameMode === "classic") {
+      $("#solve-bar-points").hide();
+      $("#wheel, #ptr").fadeOut();
+    } else if (gameMode === "tossup") {
+      $("#solve-bar-points").text(`For ${tossUpCurrentPoints} points!`).show();
+      $(".puzzle-board-border").removeClass("solving");
+    } else if (gameMode === "bonus") {
+      $("#solve-bar-points").hide();
+      $(".puzzle-board-border").removeClass("solving");
+    }
+  }
+
+  // Handles closing the solve bar with the 'X' button
+  $("#solve-bar-submit-btn").on("click", function () {
+    const attempt = $("#solve-bar-input").val();
+    hideSolveInput();
+    if (solveCallback) {
+      solveCallback(attempt);
+      solveCallback = null;
+    }
+  });
+
+  // Handles closing the solve bar with the 'X' button
+  $("#solve-bar-close-btn").on("click", function () {
+    hideSolveInput();
+
+    if (gameMode === "tossup" && gameState === "tossup_paused") {
+      resumeTossUpSequence();
+    } else if (gameMode === "bonus" && gameState === "bonus_solving") {
+      tensecond.stop();
+      buzzer.play();
+      $("#message-label").text(`Sorry, that's not correct!`);
+      failBonusRound();
+    }
+  });
+
+  /**
+   * Handles the result of the bonus round solve attempt.
+   * It's called when the player submits an answer or when the buzz-in timer runs out.
+   * @param {string} attempt The player's submitted answer. An empty string signifies a loss.
+   */
+  /**
+   * Handles the result of the bonus round solve attempt.
+   * @param {string} attempt The player's submitted answer.
+   */
+  function handleBonusRoundSolve(attempt) {
+    bonus.stop();
+    bonus2.stop();
+    // THE FIX: Corrected the variable name from bonusRoundtimerInterval to bonusRoundTimerInterval
+    $(".puzzle-board-border").removeClass("solving");
+
+    // Hide bonus round UI and show the main message bar
+    $("#bonus-round-info").addClass("hidden");
+    $(".game-info-and-controls").removeClass("hidden");
+
+    // Normalize strings for comparison
+    const solutionAlphaOnly = currentPuzzle.puzzle
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "");
+    const attemptAlphaOnly = attempt.toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+    // Check if the attempt is correct
+    if (attemptAlphaOnly && attemptAlphaOnly === solutionAlphaOnly) {
+      // WIN condition
+      triggerBigSolveAnimation();
+      $(".puzzle-board-border").addClass("solved-bonus");
+      gameState = "game_over";
+      if (gameMode == "bonus") {
+        bonuswin.play();
+      }
+      tensecond.stop();
+
+      $(".puzzle-board").addClass("solved");
+      $("#message-label").text(
+        `YOU WIN! The puzzle was: "${currentPuzzle.puzzle}"`
+      );
+      // Fully reveal the puzzle board
+      $(".tile-container").each(function () {
+        if ($(this).data("letter")) {
+          revealLetter(this, $(this).data("letter"), false, false);
+        }
+      });
+    } else {
+      // LOSS condition
+      tensecond.stop();
+      buzzer.play();
+      $("#message-label").text(`Sorry, that's not correct!`);
+      failBonusRound();
+    }
+
+    // End the game
+    setTimeout(() => {
+      $("#message-label").text("Press SPACE to return to the menu.");
+    }, 5000);
+  }
+
+  /**
+   * Triggers the sequence for losing the bonus round.
+   * This function is called on timeout or when the player closes the solve modal.
+   */
+  /**
+   * Triggers the sequence for losing the bonus round.
+   * This function is called on timeout or when the player closes the solve modal.
+   */
+  function failBonusRound() {
+    // Stop the timer and the 10-second sound
+    clearInterval(bonusTimerInterval);
+
+    // Update game state and UI
+    $(".puzzle-board-border").removeClass("solving");
+
+    // After a brief pause, find and reveal all remaining letters
+    setTimeout(() => {
+      const missingTilesQueue = [];
+      // Find all tiles that have a letter but haven't been revealed yet
+      $(".tile-container").each(function () {
+        const tile = $(this);
+        if (tile.data("letter") && tile.find(".tile-letter").text() === "") {
+          missingTilesQueue.push(tile);
+        }
+      });
+
+      // Shuffle the tiles for a random reveal order
+      for (let i = missingTilesQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [missingTilesQueue[i], missingTilesQueue[j]] = [
+          missingTilesQueue[j],
+          missingTilesQueue[i],
+        ];
+      }
+
+      if (gameMode == "bonus") {
+        bonuslose.play();
+      }
+
+      // This function reveals the missing letters one by one
+      function revealNextMissing() {
+        if (missingTilesQueue.length > 0) {
+          const tileToReveal = missingTilesQueue.shift();
+          // Reveal the letter with the animation, but no sound
+          revealLetterWithAnimation(
+            tileToReveal,
+            tileToReveal.data("letter"),
+            false
+          );
+          setTimeout(revealNextMissing, 1000); // Reveal the next letter after 700ms
+        } else {
+          gameState = "game_over";
+          $("#message-label").text("Press SPACE to return to the menu.");
+        }
+      }
+
+      revealNextMissing(); // Start the final reveal sequence
+    }, 1500); // Wait 1.5 seconds after "Time's up!" before revealing
+  }
+
+  /**
+   * Reveals one letter from the toss-up queue and checks if the round is over.
+   */
+  function tossupRevealLoop() {
+    if (remainingLetterTiles.length > 0) {
+      const tileToReveal = remainingLetterTiles.pop();
+      revealLetter(tileToReveal, $(tileToReveal).data("letter"), false);
+    }
+
+    // End the round if no letters are left to reveal
+    if (remainingLetterTiles.length === 0) {
+      clearInterval(tossUpInterval);
+      if (gameState === "tossup_revealing") {
+        handleTossUpSolve(false, 0); // Handle the end of the round
+      }
+    }
   }
 
   function handleTossUpSolve(isCorrect, points) {
@@ -611,6 +1117,8 @@ $(function () {
       // Correct solve logic remains the same
       triggerSolveAnimation();
       tossupSolvedSound.play();
+      $(".puzzle-board-border").addClass("solved");
+
       $(".puzzle-board").addClass("solved");
       totalTossUpPoints += points;
       tossUpRoundsPlayed++;
@@ -624,6 +1132,7 @@ $(function () {
       $("#message-label").text(
         `Solved in ${solveTimeSeconds}s! Press SPACE for next.`
       );
+      $(".puzzle-board-border").removeClass("solving");
       gameState = "tossup_solved";
     } else {
       // --- FIX: Logic for when time runs out ---
@@ -650,6 +1159,7 @@ $(function () {
       $("#message-label").text(
         `You didn't solve in time! Press SPACE for next puzzle.`
       );
+      $(".puzzle-board-border").removeClass("solving");
       gameState = "tossup_failed";
     }
 
@@ -674,10 +1184,13 @@ $(function () {
     tossUpRoundsPlayed = 0;
     $("#avg-points").text("0");
 
-    if (gameMode === "tossup") {
+    if (gameMode === "tossup" || gameMode === "bonus") {
       $("#wheel, #ptr, #player-score, #solve-btn-container").addClass("hidden");
       $("#tossup-points-display, #avg-points-display").removeClass("hidden");
       $(".game-info-and-controls").css("justify-content", "center");
+      if (gameMode === "bonus") {
+        $("#tossup-points-display, #avg-points-display").addClass("hidden");
+      }
     } else {
       $("#tossup-points-display, #avg-points-display").addClass("hidden");
       $("#wheel, #ptr, #player-score, #solve-btn-container").removeClass(
@@ -685,16 +1198,25 @@ $(function () {
       );
       $(".game-info-and-controls").css("justify-content", "space-between");
     }
-    setTimeout(setupNewGame, 500);
+    setupNewGame();
   });
 
   $('input[name="gameMode"]').on("change", function () {
     if ($(this).val() === "tossup") {
       $("#classic-rules").hide();
+      $("#bonus-rules").hide();
+
       $("#tossup-rules").show();
-    } else {
-      $("#tossup-rules").hide();
+    }
+    if ($(this).val() === "classic") {
       $("#classic-rules").show();
+      $("#bonus-rules").hide();
+      $("#tossup-rules").hide();
+    }
+    if ($(this).val() === "bonus") {
+      $("#classic-rules").hide();
+      $("#bonus-rules").show();
+      $("#tossup-rules").hide();
     }
   });
 
@@ -702,18 +1224,25 @@ $(function () {
     if (e.ctrlKey && e.key.toLowerCase() === "r") {
       return;
     }
-    if ($("#solve-input-container").is(":visible")) {
+    if ($("#bottom-solve-bar").hasClass("visible")) {
       if (e.key === "Enter") {
-        $("#submit-solve-btn").click();
+        $("#solve-bar-submit-btn").click();
       } else if (e.key === "Escape") {
-        $(".close-solve-box").click();
+        $("#solve-bar-close-btn").click();
       }
-      return;
+      return; // Stop processing other keys
     }
 
-    if (e.code === "Space" || (e.key.length === 1 && e.key.match(/[a-zA-Z]/))) {
-      e.preventDefault();
+    // This is your main window event listener for keyboard input
+    // ... other keydown logic for different game states
+
+    // Add this new case for the bonus round
+    if (gameState === "bonus_picking_letters") {
+      const letter = e.key.toUpperCase();
+      handleBonusPick(letter);
     }
+
+    // ... other keydown logic
 
     if (gameMode === "classic") {
       const letter = e.key.toUpperCase();
@@ -750,6 +1279,10 @@ $(function () {
         }
       }
       if (e.code === "Space") {
+        // This is your main window event listener for keyboard input
+        console.log("test");
+        console.log(gameState);
+
         if (gameState === "round_over") {
           setupNewGame();
           return;
@@ -820,6 +1353,17 @@ $(function () {
       }
     } else {
       if (e.code === "Space") {
+        if (gameState === "game_over") {
+          resetGame();
+        }
+        if (gameState === "bonus_waiting_for_buzz") {
+          // Stop the timer and sound
+          clearInterval(bonusTimerInterval);
+
+          // Prevent further buzzing and open the solve puzzle modal
+          gameState = "bonus_solving";
+          showSolveInput(handleBonusRoundSolve); // Assuming these functions exist
+        }
         if (gameState === "tossup_revealing") {
           buzzIn();
         } else if (
@@ -830,23 +1374,6 @@ $(function () {
           setupNewGame();
         }
       }
-    }
-  });
-
-  $("#submit-solve-btn").on("click", function () {
-    const attempt = $("#solve-input").val();
-    $("#solve-input").val("");
-    $("#solve-input-container").hide();
-    if (solveCallback) {
-      solveCallback(attempt);
-      solveCallback = null;
-    }
-  });
-
-  $(".close-solve-box").on("click", function () {
-    $("#solve-input-container").hide();
-    if (gameMode === "tossup" && gameState === "tossup_paused") {
-      resumeTossUpSequence();
     }
   });
 
@@ -863,17 +1390,24 @@ $(function () {
   });
 
   function fetchPuzzles() {
-    fetch("assets/puzzles.json")
-      .then((response) => response.json())
-      .then((data) => {
-        allPuzzles = data;
-        $("#modal-overlay, #intro-modal").show();
+    Promise.all([
+      fetch("assets/puzzles.json"),
+      fetch("assets/bonus_puzzles.json"), // Fetch the new file
+    ])
+      .then((responses) => Promise.all(responses.map((res) => res.json())))
+      .then(([mainPuzzlesData, bonusPuzzlesData]) => {
+        allPuzzles = mainPuzzlesData;
+        bonusPuzzles = bonusPuzzlesData; // Store the bonus puzzles in the new variable
+
+        // Start the game now that both are loaded
+        // Start the game now that both are loaded
+        $("#intro-modal")
+          .css("opacity", "1")
+          .css("transform", "translate(-50%, -50%) scale(1)");
       })
       .catch((error) => {
-        console.error("Could not load puzzles:", error);
-        $("#message-label").text(
-          "Error: Could not load puzzles from puzzles.json"
-        );
+        console.error("Could not load one or more puzzle banks:", error);
+        $("#message-label").text("Error: Could not load puzzles.");
       });
   }
 
@@ -883,7 +1417,7 @@ $(function () {
 setRandomWallpaper();
 
 function setRandomWallpaper() {
-  const wallpaperCount = 9;
+  const wallpaperCount = 16;
   const randomWallpaperNumber = Math.floor(Math.random() * wallpaperCount) + 1;
   const wallpaperUrl = `url('wallpapers/${randomWallpaperNumber}.png')`;
   $("#wallpaper").css("background-image", wallpaperUrl);

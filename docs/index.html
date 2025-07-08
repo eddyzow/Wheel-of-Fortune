@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheel of Fortune - Toss-Up Mode</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=Roboto:wght@800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700;800&family=Roboto:wght@800&display=swap"
       rel="stylesheet"
     />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link href="style.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1/dist/confetti.browser.min.js"></script>
   </head>
   <body>
     <canvas id="particle-canvas"></canvas>
     <div id="modal-overlay"></div>
 
-    <!-- Intro Modal -->
     <div id="intro-modal" class="modal">
       <h1>Welcome to Wheel of Fortune!</h1>
       <p>Select a game mode to get started.</p>
@@ -30,6 +30,10 @@
           <input type="radio" name="gameMode" value="tossup" />
           <span>Toss-Up</span>
         </label>
+        <label class="mode-label">
+          <input type="radio" name="gameMode" value="bonus" />
+          <span>Bonus Round</span>
+        </label>
       </div>
 
       <div id="classic-rules" class="rules-container">
@@ -42,6 +46,9 @@
           <li>
             To buy a <strong>vowel</strong>, press the key when it's your turn
             to spin (costs $250).
+          </li>
+          <li>
+            Don't hit <strong>Bankrupt</strong> or <strong>Lose a Turn</strong>!
           </li>
           <li>
             Click the <strong>Solve Puzzle</strong> button if you know the
@@ -66,13 +73,26 @@
           </li>
         </ul>
       </div>
+
+      <div id="bonus-rules" class="rules-container" style="display: none">
+        <p>Here's how to play <strong>Bonus Round</strong> mode:</p>
+        <ul>
+          <li>
+            A random puzzle from the Bonus Puzzle Bank will appear, and you will
+            get letters R, S, T, L, N, and E.
+          </li>
+          <li>Select three consonants and a vowel for help.</li>
+          <li>You'll get 10 seconds to buzz in and guess the puzzle!</li>
+          <li>Warning: it's very difficult!</li>
+        </ul>
+      </div>
+
       <div class="modal-footer-buttons">
         <button id="intro-about-btn">About</button>
         <button id="start-game-btn">Start Game</button>
       </div>
     </div>
 
-    <!-- About Modal -->
     <div id="about-modal" class="modal" style="display: none">
       <h1>About Wheel of Fortune</h1>
       <p>
@@ -93,17 +113,6 @@
       <button class="close-modal-btn">Close</button>
     </div>
 
-    <!-- Solve Input Box -->
-    <div id="solve-input-container" style="display: none">
-      <div id="solve-input-box">
-        <button class="close-solve-box">×</button>
-        <h2 id="solve-title">Solve the Puzzle</h2>
-        <p id="solve-points-display"></p>
-        <input type="text" id="solve-input" placeholder="Type your answer..." />
-        <button id="submit-solve-btn">Submit</button>
-      </div>
-    </div>
-
     <header id="game-header" class="hidden">
       <button id="back-btn">‹ Back to Menu</button>
       <div id="header-title">Wheel of Fortune</div>
@@ -112,7 +121,7 @@
 
     <div id="wallpaper"></div>
     <div class="main-container hidden">
-      <div id="category-label" class="category-label">Wheel of Fortune</div>
+      <div id="category-label" class="category-label"></div>
 
       <div class="game-info-and-controls">
         <div id="player-score" class="info-display">
@@ -129,67 +138,179 @@
           <button id="solve-btn">Solve Puzzle</button>
         </div>
       </div>
+      <div id="bonus-round-info" class="info-display hidden">
+        <p id="bonus-round-message"></p>
+        <div id="bonus-letter-picks-container" class="hidden">
+          <p>Your letters: <span id="bonus-letters-picked"></span></p>
+        </div>
+      </div>
       <div class="puzzle-board-glow-container">
-        <div class="puzzle-board">
-          <div class="puzzle-row" id="row1">
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-          </div>
-          <div class="puzzle-row" id="row2">
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-          </div>
-          <div class="puzzle-row" id="row3">
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-          </div>
-          <div class="puzzle-row" id="row4">
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
-            <div class="tile-container"><span class="tile-letter"></span></div>
+        <div class="puzzle-board-border">
+          <div class="puzzle-board">
+            <div class="puzzle-row" id="row1">
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+            </div>
+            <div class="puzzle-row" id="row2">
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+            </div>
+            <div class="puzzle-row" id="row3">
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+            </div>
+            <div class="puzzle-row" id="row4">
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+              <div class="tile-container">
+                <span class="tile-letter"></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -197,6 +318,22 @@
       <img id="ptr" src="assets/images/wheel-pointer.png" />
       <img id="wheel" src="assets/images/wheel.png" />
     </div>
+
+    <div id="bottom-solve-bar">
+      <div id="solve-bar-content">
+        <h3 id="solve-bar-title">Solve the Puzzle</h3>
+        <p id="solve-bar-points"></p>
+        <input
+          type="text"
+          id="solve-bar-input"
+          placeholder="Type your answer..."
+          autocomplete="off"
+        />
+        <button id="solve-bar-submit-btn">Submit</button>
+      </div>
+      <button id="solve-bar-close-btn">×</button>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>
