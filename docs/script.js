@@ -604,7 +604,7 @@ $(function () {
     pointsUpdateInterval = setInterval(() => {
       const elapsed = Date.now() - tossUpStartTime;
       const progress = Math.min(1, elapsed / tossUpDuration);
-      tossUpCurrentPoints = Math.round(1000 * Math.pow(1 - progress, 0.7));
+      tossUpCurrentPoints = Math.round(1000 * Math.pow(1 - progress, 0.5));
       $("#tossup-points").text(tossUpCurrentPoints);
 
       // THE FIX: Adding "+ 1" makes the first letter appear at time zero.
@@ -1425,6 +1425,6 @@ setRandomWallpaper();
 function setRandomWallpaper() {
   const wallpaperCount = 17;
   const randomWallpaperNumber = Math.floor(Math.random() * wallpaperCount) + 1;
-  const wallpaperUrl = `url('wallpapers/${randomWallpaperNumber}.png')`;
+  const wallpaperUrl = `url('wallpapers/${randomWallpaperNumber}-min.png')`;
   $("#wallpaper").css("background-image", wallpaperUrl);
 }
