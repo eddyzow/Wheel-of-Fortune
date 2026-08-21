@@ -8,11 +8,16 @@ export const VOWELS = ["A", "E", "I", "O", "U"];
 export const alphaOnly = (s) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
 export async function loadPuzzles() {
-  const [main, bonus] = await Promise.all([
+  const [main, bonus, triple] = await Promise.all([
     fetch("assets/puzzles.json").then((r) => r.json()),
     fetch("assets/bonus_puzzles.json").then((r) => r.json()),
+    // Themed Triple Toss-Up sets (three puzzles sharing a common word,
+    // the third a play on words). Optional: mode falls back to random.
+    fetch("assets/triple_tossups.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .catch(() => []),
   ]);
-  return { main, bonus };
+  return { main, bonus, triple };
 }
 
 // Greedy word wrap across the given per-line budgets.

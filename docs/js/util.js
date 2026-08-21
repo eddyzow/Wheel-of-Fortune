@@ -52,6 +52,27 @@ export function animate(duration, onUpdate, ease = easeOutCubic) {
 
 export const fmtMoney = (n) => "$" + n.toLocaleString("en-US");
 
+// Edit distance, used to forgive small speech-to-text slips on spoken solves.
+export function levenshtein(a, b) {
+  if (a === b) return 0;
+  const m = a.length;
+  const n = b.length;
+  if (!m || !n) return m || n;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      cur[j] = Math.min(
+        prev[j] + 1,
+        cur[j - 1] + 1,
+        prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
 // Damped-spring animation (underdamped values ring/overshoot naturally).
 // Resolves when settled; a timeout fallback jumps to the end state if rAF
 // is suspended. damping < 2*sqrt(stiffness) ⇒ overshoot.

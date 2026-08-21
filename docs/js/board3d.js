@@ -30,95 +30,6 @@ const PILL_HALF_H = 0.45 * GOLD_H;
 const PITCH_X = TILE_W + GAP;
 const PITCH_Y = TILE_H + GAP;
 
-const STARFIELD_FRAG = `
-uniform float uTime;
-varying vec2 vUv;
-
-float hash(vec2 p) {
-  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-}
-float noise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
-             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
-}
-float fbm(vec2 p) {
-  float v = 0.0;
-  float a = 0.5;
-  for (int i = 0; i < 5; i++) {
-    v += a * noise(p);
-    p = p * 2.03 + vec2(17.0, 9.2);
-    a *= 0.5;
-  }
-  return v;
-}
-
-void main() {
-  vec2 uv = vUv;
-  vec2 p = uv * vec2(2.4, 1.2);
-  float t = uTime * 0.02;
-  float horizon = 0.30;
-  vec3 col;
-
-  if (uv.y > horizon) {
-    // --- Studio wall: navy panels, rails, spotlight pools ---
-    float wy = (uv.y - horizon) / (1.0 - horizon);
-    col = mix(vec3(0.030, 0.050, 0.115), vec3(0.010, 0.018, 0.055), wy);
-
-    // Vertical panel seams
-    float seam = abs(fract(uv.x * 12.0) - 0.5);
-    col *= 1.0 - 0.12 * smoothstep(0.46, 0.5, seam);
-    // Horizontal lighting rail
-    col *= 1.0 - 0.15 * smoothstep(0.008, 0.0, abs(uv.y - 0.64));
-    col += vec3(0.06, 0.10, 0.18) * smoothstep(0.004, 0.0, abs(uv.y - 0.645));
-
-    // Colored spotlight pools on the wall
-    vec2 d1 = uv - vec2(0.18, 0.82);
-    vec2 d2 = uv - vec2(0.50, 0.95);
-    vec2 d3 = uv - vec2(0.82, 0.82);
-    col += vec3(0.10, 0.05, 0.17) * exp(-14.0 * dot(d1, d1));
-    col += vec3(0.05, 0.08, 0.17) * exp(-12.0 * dot(d2, d2));
-    col += vec3(0.11, 0.04, 0.14) * exp(-14.0 * dot(d3, d3));
-
-    // Sweeping diagonal rig beams
-    float b1 = pow(0.5 + 0.5 * sin((uv.x * 1.4 + uv.y * 0.9) * 14.0 - t * 6.0), 7.0);
-    float b2 = pow(0.5 + 0.5 * sin((uv.x * -1.1 + uv.y * 0.7) * 11.0 + t * 4.0), 8.0);
-    float edge = smoothstep(0.2, 0.7, abs(uv.x - 0.5) + abs(uv.y - 0.55));
-    col += vec3(0.08, 0.03, 0.16) * b1 * edge;
-    col += vec3(0.10, 0.02, 0.13) * b2 * edge;
-
-    // Sparse rig lights
-    vec2 sp = p * 110.0;
-    vec2 cell = floor(sp);
-    float star = hash(cell);
-    if (star > 0.9925) {
-      vec2 pos = fract(sp) - 0.5;
-      float d = length(pos);
-      float twinkle = 0.5 + 0.5 * sin(uTime * (1.0 + star * 4.0) + star * 40.0);
-      col += vec3(0.9, 0.9, 1.0) * smoothstep(0.35, 0.0, d) * twinkle * 0.28;
-    }
-  } else {
-    // --- Glossy stage floor: dark, with smeared reflections ---
-    float fy = uv.y / horizon;
-    col = mix(vec3(0.004, 0.006, 0.014), vec3(0.028, 0.048, 0.105), fy * fy);
-    float streak = fbm(vec2(uv.x * 7.0, uv.y * 1.4 + t * 2.0));
-    col += vec3(0.014, 0.030, 0.060) * streak * fy;
-  }
-
-  // Lit stage edge at the horizon (cyan strip like the show's set)
-  col += vec3(0.10, 0.30, 0.40) * exp(-abs(uv.y - horizon) * 130.0);
-  // Warm glow pooling behind the board
-  vec2 dc = uv - vec2(0.5, 0.55);
-  col += vec3(0.055, 0.045, 0.03) * exp(-9.0 * dot(dc, dc));
-
-  float vig = smoothstep(1.35, 0.3, length(uv - vec2(0.5, 0.45)));
-  col *= vig;
-
-  gl_FragColor = vec4(col, 1.0);
-}
-`;
 
 export class Board3D {
   constructor(canvas) {
@@ -257,34 +168,19 @@ export class Board3D {
   }
 
   buildBackdrop() {
-    this.starUniforms = { uTime: { value: 0 } };
-    const mat = new THREE.ShaderMaterial({
-      uniforms: this.starUniforms,
-      vertexShader:
-        "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
-      fragmentShader: STARFIELD_FRAG,
-      depthWrite: false,
-    });
-    const plane = new THREE.Mesh(new THREE.PlaneGeometry(240, 120), mat);
-    plane.position.set(0, 0, -40);
-    this.scene.add(plane);
-
-    // Painted soft-focus studio backdrop (generated: tools/gen_backdrop.py).
+    // Static flat studio backdrop (generated: tools/gen_backdrop.py).
+    // scene.background renders in screen space, so it never moves with
+    // the camera and always covers the whole frame.
     new THREE.TextureLoader().load(
       "assets/textures/studio_backdrop.png",
       (map) => {
         map.colorSpace = THREE.SRGBColorSpace;
-        const bg = new THREE.Mesh(
-          new THREE.PlaneGeometry(96, 48),
-          new THREE.MeshBasicMaterial({ map, depthWrite: false })
-        );
-        // Stage line in the image sits at 68% height; align it just
-        // below the pill's bottom.
-        bg.position.set(0, 48 * 0.18 - PILL_HALF_H - 1.2, -12);
-        this.scene.add(bg);
+        this.scene.background = map;
       },
       undefined,
-      () => {}
+      () => {
+        this.scene.background = new THREE.Color(0x05070f);
+      }
     );
 
     // Gold sunburst set piece behind the board, like the show's surround.
@@ -593,30 +489,27 @@ export class Board3D {
 
   // --- Camera director: TV-style moves layered over the idle drift ---
 
-  // Hard cut to a new camera position, then glide home (used on new
-  // puzzles). Cycles through broadcast-style moves: side sweep, crane
-  // down from above, and a close-up pull-back reveal.
+  // Cut to a new camera position, then run a FIXED-DURATION eased glide
+  // home — fast confident start, soft landing, no slow creeping tail.
+  // Cycles broadcast moves: side sweep, crane from above, pull-back.
   sweepIn() {
     const d = this.baseDist || 20;
     this.sweepIdx = ((this.sweepIdx ?? -1) + 1) % 3;
     this.sweepSide = -(this.sweepSide || 1);
+    let from;
+    let dur;
     if (this.sweepIdx === 0) {
-      // Side sweep (alternating left/right)
-      this.camera.position.x += 12 * this.sweepSide;
-      this.camera.position.y -= 3.5;
-      this.camera.position.z = d * 1.55;
+      from = { x: 12 * this.sweepSide, y: -4.5, z: d * 1.5 };
+      dur = 1500;
     } else if (this.sweepIdx === 1) {
-      // Crane shot: drop in from above
-      this.camera.position.x += 3 * this.sweepSide;
-      this.camera.position.y += 10;
-      this.camera.position.z = d * 1.3;
+      from = { x: 3 * this.sweepSide, y: 9, z: d * 1.3 };
+      dur = 1600;
     } else {
-      // Close-up on the board, pulling back to full frame
-      this.camera.position.x += 2 * this.sweepSide;
-      this.camera.position.y += 1;
-      this.camera.position.z = d * 0.52;
+      from = { x: 2 * this.sweepSide, y: -0.5, z: d * 0.55 };
+      dur = 1300;
     }
-    this.punchIn(0.03);
+    this.camera.position.set(from.x, from.y, from.z);
+    this.camAnim = { t0: performance.now(), dur, from };
   }
 
   // Quick dolly kick with a springy return (letter reveals, buzz-ins).
@@ -624,8 +517,8 @@ export class Board3D {
     this.zoomV -= strength * 9;
   }
 
-  // Slow celebratory orbit (solves, wins) — wide, with a dolly-in kick.
-  celebrateCamera(seconds = 5) {
+  // Brief celebratory sway (solves, wins) — one confident arc, then home.
+  celebrateCamera(seconds = 2.1) {
     this.orbitT = seconds;
     this.punchIn(0.12);
   }
@@ -633,7 +526,6 @@ export class Board3D {
   tick() {
     const dt = Math.min(this.clock.getDelta(), 0.05);
     const t = this.clock.elapsedTime;
-    this.starUniforms.uTime.value = t;
 
     // Zoom kick spring (underdamped — it overshoots and rings once).
     this.zoom = this.zoom ?? 0;
@@ -658,9 +550,23 @@ export class Board3D {
     const px = Math.sin(t * 0.4) * 0.4 + orbitX;
     const py = -1.7 + Math.cos(t * 0.31) * 0.2 + orbitY;
     const pz = (this.baseDist || 20) * (1 + this.zoom + orbitZoom);
-    this.camera.position.x += (px - this.camera.position.x) * 0.04;
-    this.camera.position.y += (py - this.camera.position.y) * 0.04;
-    this.camera.position.z += (pz - this.camera.position.z) * 0.07;
+    if (this.camAnim) {
+      // Timed move: ease from the cut pose to the (drifting) home pose.
+      const p = Math.min(1, (performance.now() - this.camAnim.t0) / this.camAnim.dur);
+      const e = 1 - Math.pow(1 - p, 4); // easeOutQuart
+      const f = this.camAnim.from;
+      this.camera.position.set(
+        f.x + (px - f.x) * e,
+        f.y + (py - f.y) * e,
+        f.z + (pz - f.z) * e
+      );
+      if (p >= 1) this.camAnim = null;
+    } else {
+      // Snappy follow of the drifting target (tracks springs and orbits).
+      this.camera.position.x += (px - this.camera.position.x) * 0.12;
+      this.camera.position.y += (py - this.camera.position.y) * 0.12;
+      this.camera.position.z += (pz - this.camera.position.z) * 0.12;
+    }
     this.camera.lookAt(0, 0.1, 0);
 
     // Chase lights: three phase groups pulsing in sequence

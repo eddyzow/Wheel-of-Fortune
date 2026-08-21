@@ -4,39 +4,39 @@ import { rand } from "./util.js";
 
 const STEP = (Math.PI * 2) / 24;
 
-const cash = (value, color, text = "#fff") => ({
+const cash = (value, color) => ({
   type: "cash",
   value,
   label: "$" + value,
   color,
-  text,
 });
 
+// Bright print-style palette matching the real wheel's art.
 export const WEDGES = [
-  { type: "cash", value: 2500, label: "$2500", color: "#7a1fa2", text: "#ffe066" },
-  { type: "bankrupt", value: 0, label: "BANKRUPT", color: "#0a0a0a", text: "#fff" },
-  cash(900, "#e53935"),
-  cash(500, "#fdd835", "#111"),
-  cash(650, "#1e88e5"),
-  cash(500, "#f06292", "#111"),
-  cash(800, "#fb8c00"),
-  { type: "loseturn", value: 0, label: "LOSE A TURN", color: "#ececec", text: "#111" },
-  cash(700, "#43a047"),
-  { type: "freeplay", value: 500, label: "FREE PLAY", color: "#00b8a9", text: "#053" },
-  cash(650, "#8e24aa"),
-  { type: "bankrupt", value: 0, label: "BANKRUPT", color: "#0a0a0a", text: "#fff" },
-  cash(600, "#e53935"),
-  cash(500, "#29b6f6", "#111"),
-  cash(550, "#fdd835", "#111"),
-  cash(600, "#5e35b1"),
-  { type: "million", value: 0, label: "MILLION", color: "#0f5132", text: "#d9f7e8" },
-  cash(700, "#fb8c00"),
-  cash(500, "#43a047"),
-  cash(650, "#e53935"),
-  cash(600, "#1e88e5"),
-  cash(700, "#f06292", "#111"),
-  cash(600, "#fdd835", "#111"),
-  { type: "wildcard", value: 500, label: "WILD CARD", color: "#c2185b", text: "#ffe066" },
+  cash(2500, "#3fa3e8"),
+  { type: "bankrupt", value: 0, label: "BANKRUPT", color: "#0d0d0d" },
+  cash(900, "#f2882d"),
+  cash(500, "#f7d648"),
+  cash(650, "#ef9fb0"),
+  cash(500, "#9059c8"),
+  cash(800, "#e63e30"),
+  { type: "loseturn", value: 0, label: "LOSE A TURN", color: "#f2ede1" },
+  cash(700, "#f7d648"),
+  { type: "freeplay", value: 500, label: "FREE PLAY", color: "#56d8de" },
+  cash(650, "#47b258"),
+  { type: "bankrupt", value: 0, label: "BANKRUPT", color: "#0d0d0d" },
+  cash(600, "#ef9fb0"),
+  cash(500, "#62b8e8"),
+  cash(550, "#9059c8"),
+  cash(600, "#f2882d"),
+  { type: "million", value: 0, label: "MILLION", color: "#0d0d0d" },
+  cash(700, "#f7d648"),
+  cash(500, "#e63e30"),
+  cash(650, "#a58ce0"),
+  cash(600, "#47b258"),
+  cash(700, "#62b8e8"),
+  cash(600, "#e63e30"),
+  { type: "wildcard", value: 500, label: "WILD CARD", color: "#47b258" },
 ];
 
 export class Wheel {
@@ -54,19 +54,24 @@ export class Wheel {
     this.base = document.createElement("canvas");
     this.buildBase();
 
-    // Generated textures; rebuild the face as each arrives.
+    // Rebuild once the display font is ready so the digits rasterize bold.
+    document.fonts?.ready?.then(() => {
+      this.buildBase();
+      this.dirty = true;
+    });
+    // Codex-generated print textures: hub center + wedge material overlay.
     this.hubImg = new Image();
     this.hubImg.onload = () => {
       this.buildBase();
       this.dirty = true;
     };
-    this.hubImg.src = "assets/textures/radial_brushed.png";
-    this.grainImg = new Image();
-    this.grainImg.onload = () => {
+    this.hubImg.src = "assets/textures/hub_center.png";
+    this.printImg = new Image();
+    this.printImg.onload = () => {
       this.buildBase();
       this.dirty = true;
     };
-    this.grainImg.src = "assets/textures/wheel_grain.png";
+    this.printImg.src = "assets/textures/wedge_print.png";
 
     const ro = new ResizeObserver(() => this.resize());
     ro.observe(canvas);
@@ -77,8 +82,10 @@ export class Wheel {
   }
 
   // Render the static wheel face once at high resolution.
+  // Flat print-style art like the real wheel: bright solid wedges, a big
+  // plain teal hub, and huge black digits with white outlines + shadows.
   buildBase() {
-    const S = 1400;
+    const S = 1600;
     const c = this.base;
     c.width = c.height = S;
     const g = c.getContext("2d");
@@ -86,128 +93,145 @@ export class Wheel {
     g.translate(R, R);
     g.rotate(-Math.PI / 2); // local angle 0 points up
 
-    const rimOuter = R * 0.985;
-    const rimInner = R * 0.94;
-    const hubR = R * 0.16;
+    const edge = R * 0.995;
+    const borderW = R * 0.03; // gold border ring width
+    const faceEdge = edge - borderW;
+    const hubR = R * 0.44;
+    const FONT = "'Plus Jakarta Sans', 'Roboto', sans-serif";
 
+    // Flat wedge fills
     for (let i = 0; i < 24; i++) {
       const w = WEDGES[i];
       const a0 = i * STEP - STEP / 2;
       const a1 = a0 + STEP;
-
-      // Wedge fill with a subtle radial sheen
-      const grad = g.createRadialGradient(0, 0, hubR, 0, 0, rimInner);
-      grad.addColorStop(0, shade(w.color, 1.25));
-      grad.addColorStop(0.55, w.color);
-      grad.addColorStop(1, shade(w.color, 0.8));
       g.beginPath();
       g.moveTo(0, 0);
-      g.arc(0, 0, rimInner, a0, a1);
+      g.arc(0, 0, edge, a0, a1);
       g.closePath();
-      g.fillStyle = grad;
+      g.fillStyle = w.color;
       g.fill();
-      g.strokeStyle = "rgba(255,255,255,0.35)";
-      g.lineWidth = 2;
-      g.stroke();
     }
 
-    // Radial-fiber grain over the wedge paint (before labels stay crisp).
-    if (this.grainImg?.complete && this.grainImg.naturalWidth > 0) {
+    // Printed-material overlay (Codex texture: sparkles + fiber streaks)
+    if (this.printImg?.complete && this.printImg.naturalWidth > 0) {
       g.save();
-      g.rotate(Math.PI / 2); // grain image is orientation-agnostic
-      g.drawImage(this.grainImg, -R, -R, R * 2, R * 2);
+      g.rotate(Math.PI / 2);
+      g.drawImage(this.printImg, -R, -R, R * 2, R * 2);
       g.restore();
     }
+
+    // One glyph with shadow, outline, fill — used by the stack drawer.
+    const glyph = (ch, r, tangent, fs, fill, stroke) => {
+      g.save();
+      g.translate(r, tangent);
+      g.rotate(Math.PI / 2);
+      g.font = `800 ${fs}px ${FONT}`;
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.fillStyle = "rgba(0,0,0,0.4)";
+      g.fillText(ch, fs * 0.07, fs * 0.07);
+      if (stroke) {
+        g.lineWidth = fs * 0.14;
+        g.lineJoin = "round";
+        g.strokeStyle = stroke;
+        g.strokeText(ch, 0, 0);
+      }
+      g.fillStyle = fill;
+      g.fillText(ch, 0, 0);
+      g.restore();
+    };
+
+    // Character stack centered radially between the hub and the border.
+    const drawStacked = (label, mid, fs, fill, stroke, tight) => {
+      const stepLen = (ch) => (ch === " " ? fs * 0.4 : fs * (tight ? 0.97 : 0.9));
+      let stackLen = fs * 0.85; // first glyph's own height allowance
+      for (let i = 1; i < label.length; i++) stackLen += stepLen(label[i]);
+      const outer = faceEdge - fs * 0.35;
+      const inner = hubR + fs * 0.35;
+      let r = outer - Math.max(0, outer - inner - stackLen) / 2 - fs * 0.45;
+      g.save();
+      g.rotate(mid);
+      for (const ch of label) {
+        if (ch !== " ") glyph(ch, r, 0, fs, fill, stroke);
+        r -= stepLen(ch);
+      }
+      g.restore();
+      return outer; // where the stack started (for the $ badge)
+    };
 
     for (let i = 0; i < 24; i++) {
       const w = WEDGES[i];
-      const a0 = i * STEP - STEP / 2;
-
-      // Label: characters stacked along the radius, rim → hub
-      const mid = a0 + STEP / 2;
-      g.save();
-      g.rotate(mid);
-      g.fillStyle = w.text;
-      g.textAlign = "center";
-      g.textBaseline = "middle";
-      const chars = w.label.split("");
-      const isSpecial = w.type !== "cash";
-      const fs = isSpecial ? R * 0.062 : R * 0.085;
-      g.font = `800 ${fs}px 'Roboto', 'IBM Plex Sans', sans-serif`;
-      let r = rimInner - fs * 0.8;
-      for (const ch of chars) {
-        if (ch !== " ") {
-          g.save();
-          g.translate(r, 0);
-          g.rotate(Math.PI / 2);
-          g.fillText(ch, 0, 0);
-          g.restore();
-        }
-        r -= ch === " " ? fs * 0.5 : fs * (isSpecial ? 0.92 : 1.0);
+      const mid = i * STEP;
+      if (w.type === "cash") {
+        // Digits only in the stack; the $ sits beside the top digit,
+        // smaller — like the show's wheel art.
+        const digits = String(w.value);
+        const fs = digits.length > 3 ? R * 0.112 : R * 0.128;
+        drawStacked(digits, mid, fs, "#101010", "#ffffff", true);
+        g.save();
+        g.rotate(mid);
+        glyph("$", faceEdge - fs * 0.72, -fs * 0.62, fs * 0.52, "#101010", "#ffffff");
+        g.restore();
+      } else if (w.type === "bankrupt") {
+        drawStacked("BANKRUPT", mid, R * 0.063, "#ffffff", null, false);
+      } else if (w.type === "loseturn") {
+        drawStacked("LOSE A TURN", mid, R * 0.055, "#101010", null, false);
+      } else if (w.type === "freeplay") {
+        drawStacked("FREE PLAY", mid, R * 0.058, "#101010", "#fff9d6", false);
+      } else if (w.type === "million") {
+        drawStacked("MILLION", mid, R * 0.066, "#57e85e", null, false);
+      } else if (w.type === "wildcard") {
+        drawStacked("WILD", mid, R * 0.085, "#e6399b", "#ffffff", false);
       }
-      g.restore();
     }
 
-    // Outer rim
+    // Gold border ring around the face
+    const ring = g.createLinearGradient(-R, -R, R, R);
+    ring.addColorStop(0, "#8a6a1c");
+    ring.addColorStop(0.35, "#e8c56a");
+    ring.addColorStop(0.65, "#b08a34");
+    ring.addColorStop(1, "#6f5416");
     g.beginPath();
-    g.arc(0, 0, (rimOuter + rimInner) / 2, 0, Math.PI * 2);
-    g.lineWidth = rimOuter - rimInner;
-    const rimGrad = g.createLinearGradient(-R, -R, R, R);
-    rimGrad.addColorStop(0, "#3a3a44");
-    rimGrad.addColorStop(0.5, "#9fa4b3");
-    rimGrad.addColorStop(1, "#2c2c34");
-    g.strokeStyle = rimGrad;
+    g.arc(0, 0, edge - borderW / 2, 0, Math.PI * 2);
+    g.lineWidth = borderW;
+    g.strokeStyle = ring;
+    g.stroke();
+    g.beginPath();
+    g.arc(0, 0, faceEdge, 0, Math.PI * 2);
+    g.lineWidth = R * 0.004;
+    g.strokeStyle = "rgba(0,0,0,0.45)";
     g.stroke();
 
     // Pegs at wedge boundaries
     for (let i = 0; i < 24; i++) {
       const a = i * STEP - STEP / 2;
-      const px = Math.cos(a) * rimInner * 0.985;
-      const py = Math.sin(a) * rimInner * 0.985;
-      const peg = g.createRadialGradient(px - 3, py - 3, 1, px, py, R * 0.014);
+      const px = Math.cos(a) * edge * 0.965;
+      const py = Math.sin(a) * edge * 0.965;
+      const peg = g.createRadialGradient(px - 3, py - 3, 1, px, py, R * 0.013);
       peg.addColorStop(0, "#ffffff");
       peg.addColorStop(1, "#8a8f9c");
       g.beginPath();
-      g.arc(px, py, R * 0.014, 0, Math.PI * 2);
+      g.arc(px, py, R * 0.013, 0, Math.PI * 2);
       g.fillStyle = peg;
       g.fill();
     }
 
-    // Hub: generated spun-metal disc when available, gradient fallback
+    // Hub: Codex-generated laminate disc, flat teal fallback
     if (this.hubImg?.complete && this.hubImg.naturalWidth > 0) {
-      g.save();
-      g.beginPath();
-      g.arc(0, 0, hubR, 0, Math.PI * 2);
-      g.clip();
       g.drawImage(this.hubImg, -hubR, -hubR, hubR * 2, hubR * 2);
-      // Darken toward the edge so it reads as recessed
-      const shade2 = g.createRadialGradient(0, 0, hubR * 0.35, 0, 0, hubR);
-      shade2.addColorStop(0, "rgba(0,0,0,0)");
-      shade2.addColorStop(1, "rgba(0,0,0,0.55)");
-      g.fillStyle = shade2;
-      g.fillRect(-hubR, -hubR, hubR * 2, hubR * 2);
-      g.restore();
     } else {
-      const hubGrad = g.createRadialGradient(
-        -hubR * 0.3,
-        -hubR * 0.3,
-        hubR * 0.1,
-        0,
-        0,
-        hubR
-      );
-      hubGrad.addColorStop(0, "#4b515f");
-      hubGrad.addColorStop(1, "#15171c");
       g.beginPath();
       g.arc(0, 0, hubR, 0, Math.PI * 2);
-      g.fillStyle = hubGrad;
+      g.fillStyle = "#2f9377";
+      g.fill();
+      const hubEdge = g.createRadialGradient(0, 0, hubR * 0.82, 0, 0, hubR);
+      hubEdge.addColorStop(0, "rgba(0,0,0,0)");
+      hubEdge.addColorStop(1, "rgba(0,0,0,0.22)");
+      g.beginPath();
+      g.arc(0, 0, hubR, 0, Math.PI * 2);
+      g.fillStyle = hubEdge;
       g.fill();
     }
-    g.beginPath();
-    g.arc(0, 0, hubR, 0, Math.PI * 2);
-    g.lineWidth = R * 0.012;
-    g.strokeStyle = "#b9becb";
-    g.stroke();
   }
 
   resize() {
@@ -311,17 +335,16 @@ export class Wheel {
       this.dirty = true;
     }
 
-    if (this.dirty) {
-      this.render();
-      this.dirty = false;
-    }
+    // Always render: the wheel carries live lighting (sparkles, sheen,
+    // chasing border bulbs) even at rest.
+    this.render(now / 1000);
     requestAnimationFrame((t) => this.loop(t));
   }
 
   // Fake-3D projection: the wheel is a tilted disc (vertical squash) with an
   // extruded rim, a drop shadow, and studio lighting that stays fixed in
   // the world while the painted face rotates beneath it.
-  render() {
+  render(time = 0) {
     const ctx = this.ctx;
     const W = this.canvas.width;
     if (!W) return;
@@ -410,6 +433,62 @@ export class Wheel {
     ctx.beginPath();
     ctx.arc(0, 0, R * 0.972, -1.9, -1.25);
     ctx.stroke();
+
+    // --- Live lighting (animated even at rest) ---
+    // Rotating sheen: a soft bright sector sweeping around the face
+    const sweepA = time * 0.3;
+    const sheenGrad = ctx.createRadialGradient(0, 0, R * 0.44, 0, 0, R * 0.97);
+    sheenGrad.addColorStop(0, "rgba(255,255,255,0)");
+    sheenGrad.addColorStop(0.6, "rgba(255,255,255,0.09)");
+    sheenGrad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, R * 0.97, sweepA, sweepA + 0.85);
+    ctx.closePath();
+    ctx.fillStyle = sheenGrad;
+    ctx.fill();
+
+    // Twinkle sparkles: little 4-point glints popping across the wedges
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineCap = "round";
+    for (let i = 0; i < 15; i++) {
+      const cycle = Math.floor(time * 0.8 + i * 0.617);
+      const h = Math.sin(i * 127.1 + cycle * 311.7) * 43758.5453;
+      const rnd = (k) => {
+        const x = Math.sin(h + k * 91.7) * 24634.6345;
+        return x - Math.floor(x);
+      };
+      const ang = rnd(1) * Math.PI * 2;
+      const rad = R * (0.48 + 0.45 * rnd(2));
+      const phase = (time * 0.8 + i * 0.617) % 1;
+      const a = Math.sin(phase * Math.PI); // fade in-out
+      if (a < 0.05) continue;
+      const sx = Math.cos(ang) * rad;
+      const sy = Math.sin(ang) * rad;
+      const len = R * (0.012 + 0.02 * rnd(3)) * a;
+      ctx.globalAlpha = a * 0.85;
+      ctx.lineWidth = R * 0.005;
+      ctx.beginPath();
+      ctx.moveTo(sx - len, sy);
+      ctx.lineTo(sx + len, sy);
+      ctx.moveTo(sx, sy - len);
+      ctx.lineTo(sx, sy + len);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // Chasing bulbs around the gold border
+    const NB = 48;
+    for (let i = 0; i < NB; i++) {
+      const a = (i / NB) * Math.PI * 2;
+      const b = Math.max(0, Math.sin(a * 4 + time * 5));
+      const bx = Math.cos(a) * R * 0.982;
+      const by = Math.sin(a) * R * 0.982;
+      ctx.beginPath();
+      ctx.arc(bx, by, R * 0.0085, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,${215 + Math.round(35 * b)},${140 + Math.round(90 * b)},${0.25 + 0.75 * b})`;
+      ctx.fill();
+    }
     ctx.restore();
 
     // Pointer (flapper) above the wheel top

@@ -1,7 +1,7 @@
 // Game modes: Classic, Full Game, Endless Toss-Up, Triple Toss-Up, Bonus.
 // Each mode is an async function driven by an awaitable input queue.
 
-import { delay, rand, shuffle, fmtMoney } from "./util.js";
+import { delay, rand, shuffle, fmtMoney, levenshtein } from "./util.js";
 import { alphaOnly, layoutPuzzle, VOWELS } from "./puzzles.js";
 import * as ui from "./ui.js";
 import * as fx from "./fx.js";
@@ -133,7 +133,16 @@ export class Game {
 
   isSolved(attempt, puzzle) {
     const a = alphaOnly(attempt || "");
-    return a.length > 0 && a === alphaOnly(puzzle.puzzle);
+    const target = alphaOnly(puzzle.puzzle);
+    if (!a.length) return false;
+    if (a === target) return true;
+    // Spoken answers: forgive small transcription slips ("wont" vs "won't"
+    // already normalizes away; this covers e.g. "there" vs "their").
+    if (ui.wasVoiceAttempt()) {
+      const tolerance = Math.max(1, Math.floor(target.length / 8));
+      return levenshtein(a, target) <= tolerance;
+    }
+    return false;
   }
 
   puzzleLetters(puzzle) {
@@ -360,8 +369,14 @@ export class Game {
   // opts: { mode: 'decay' | 'fixed', value, revealMs, oneShot }
   // Returns { solved, points, timeSec }
   // ------------------------------------------------------------------
-  async tossUpRound({ mode = "decay", value = 1000, revealMs = 1000, oneShot = false } = {}) {
-    const puzzle = this.newPuzzle("main");
+  async tossUpRound({ mode = "decay", value = 1000, revealMs = 1000, oneShot = false, puzzle = null } = {}) {
+    if (puzzle) {
+      // Explicit puzzle (e.g. a themed Triple Toss-Up set entry).
+      this.usedLetters = new Set();
+      ui.resetTracker();
+    } else {
+      puzzle = this.newPuzzle("main");
+    }
     SFX.reveal.play();
     await this.loadBoard(puzzle);
     ui.setMessage("Get ready…");

@@ -2,6 +2,7 @@
 
 import { fmtMoney } from "./util.js";
 import { SFX } from "./audio.js";
+import * as voice from "./voice.js";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -98,19 +99,68 @@ export function showBanner(title, subtitle = "", holdMs = 1600) {
   });
 }
 
-// --- Solve bar (promise-based) ---
+// --- Solve bar (promise-based, with spoken answers via Scribe) ---
 
 let solveResolve = null;
+let voiceCapture = null;
+let lastAttemptVoice = false;
+
+const voiceStatus = (html) => {
+  const el = $("#solve-bar-voice");
+  el.classList.toggle("hidden", !html);
+  el.innerHTML = html || "";
+};
+
+export function wasVoiceAttempt() {
+  return lastAttemptVoice;
+}
+
+function stopVoiceCapture() {
+  voiceCapture?.cancel();
+  voiceCapture = null;
+  voiceStatus("");
+}
+
+// Listen for a spoken answer and auto-submit its transcript.
+function startVoiceCapture() {
+  if (!voice.isEnabled()) return;
+  const mySession = solveResolve;
+  voiceStatus("🎤 listening…");
+  const capture = voice.recordUtterance({
+    onSpeech: () => solveResolve === mySession && voiceStatus("🎤 hearing you…"),
+  });
+  voiceCapture = capture;
+  capture.blob.then(async (blob) => {
+    if (solveResolve !== mySession || !blob) return;
+    voiceStatus("✨ transcribing…");
+    try {
+      const text = await voice.transcribe(blob);
+      if (solveResolve !== mySession) return;
+      if (!text) {
+        voiceStatus("🎤 didn't catch that — type it or press Esc");
+        return;
+      }
+      els.solveInput.value = text;
+      lastAttemptVoice = true;
+      closeSolveBar(text);
+    } catch (e) {
+      console.warn("voice transcribe failed:", e);
+      if (solveResolve === mySession) voiceStatus("⚠️ voice failed — type your answer");
+    }
+  });
+}
 
 export function showSolveBar({ title = "Solve!", pointsText = "" } = {}) {
   return new Promise((resolve) => {
     solveResolve = resolve;
+    lastAttemptVoice = false;
     els.solveTitle.textContent = title;
     els.solvePoints.textContent = pointsText;
     els.solvePoints.style.display = pointsText ? "" : "none";
     els.solveInput.value = "";
     els.solveBar.classList.add("visible");
     setTimeout(() => els.solveInput.focus(), 60);
+    startVoiceCapture();
   });
 }
 
@@ -119,6 +169,7 @@ export function solveBarVisible() {
 }
 
 function closeSolveBar(value) {
+  stopVoiceCapture();
   els.solveBar.classList.remove("visible");
   els.solveInput.blur();
   const r = solveResolve;

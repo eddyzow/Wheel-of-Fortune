@@ -8,6 +8,7 @@ import * as ui from "./ui.js";
 import { Game, Input, AbortGame } from "./modes.js";
 import { SFX, stopAllMusic, setMuted, isMuted } from "./audio.js";
 import { fmtMoney, delay } from "./util.js";
+import * as voice from "./voice.js";
 
 let game = null;
 let input = null;
@@ -17,12 +18,15 @@ async function init() {
   // Make sure the display font is in before any canvas text is rasterized.
   try {
     await Promise.race([
-      document.fonts.load("900 100px 'Roboto'"),
+      Promise.all([
+        document.fonts.load("900 100px 'Roboto'"),
+        document.fonts.load("800 100px 'Plus Jakarta Sans'"),
+      ]),
       delay(2500),
     ]);
   } catch { /* fall back to system font */ }
 
-  const { main, bonus } = await loadPuzzles();
+  const { main, bonus, triple } = await loadPuzzles();
   const board = new Board3D(document.getElementById("board-canvas"));
   const wheel = new Wheel(document.getElementById("wheel-canvas"));
 
@@ -42,7 +46,11 @@ async function init() {
     board,
     wheel,
     input,
-    bags: { main: new PuzzleBag(main), bonus: new PuzzleBag(bonus) },
+    bags: {
+      main: new PuzzleBag(main),
+      bonus: new PuzzleBag(bonus),
+      triple: triple.length ? new PuzzleBag(triple) : null,
+    },
   });
 
   window.wof = { game, input, wheel, board }; // console debugging handle
@@ -81,12 +89,47 @@ function wireHeader() {
   document.querySelectorAll(".close-modal-btn").forEach((b) =>
     b.addEventListener("click", () => {
       document.getElementById("about-modal").style.display = "none";
+      document.getElementById("settings-modal").style.display = "none";
       if (!running) ui.showMenu();
       else document.getElementById("modal-overlay").style.display = "none";
     })
   );
   document.getElementById("solve-btn").addEventListener("click", () => {
     input.push({ type: "solve" });
+  });
+  wireSettings();
+}
+
+function wireSettings() {
+  const modal = document.getElementById("settings-modal");
+  const keyInput = document.getElementById("el-key-input");
+  const status = document.getElementById("voice-status");
+
+  const refresh = () => {
+    if (voice.isEnabled()) {
+      status.textContent = "✅ Voice solving is ON — buzz with Space, then speak.";
+      keyInput.placeholder = "Key saved (paste a new one to replace, or Save empty to remove)";
+    } else {
+      status.textContent = "Voice solving is off — paste an ElevenLabs API key to enable.";
+      keyInput.placeholder = "Paste your ElevenLabs API key…";
+    }
+  };
+
+  document.getElementById("settings-btn").addEventListener("click", () => {
+    document.getElementById("modal-overlay").style.display = "block";
+    modal.style.display = "block";
+    if (!running) document.getElementById("intro-modal").style.display = "none";
+    keyInput.value = "";
+    refresh();
+  });
+  document.getElementById("el-key-save").addEventListener("click", () => {
+    voice.setKey(keyInput.value);
+    keyInput.value = "";
+    refresh();
+  });
+  keyInput.addEventListener("keydown", (e) => {
+    e.stopPropagation();
+    if (e.key === "Enter") document.getElementById("el-key-save").click();
   });
 }
 
@@ -213,9 +256,12 @@ async function runEndlessTossup() {
 }
 
 // --- Triple toss-up: $1000 / $2000 / $3000 ---
+// Authentic format: all three puzzles share a common word, and the third
+// is a play on words (themed sets from triple_tossups.json).
 async function runTripleTossup() {
   baseLayout({ tossup: true, score: true });
   const values = [1000, 2000, 3000];
+  const set = game.bags.triple?.next() ?? null;
   let won = 0;
   for (let i = 0; i < 3; i++) {
     await ui.showBanner(`TOSS-UP ${i + 1} OF 3`, fmtMoney(values[i]));
@@ -224,6 +270,7 @@ async function runTripleTossup() {
       value: values[i],
       revealMs: 850,
       oneShot: true,
+      puzzle: set ? { category: set.category, puzzle: set.puzzles[i] } : null,
     });
     if (res.solved) {
       game.setScore(game.score + values[i]);

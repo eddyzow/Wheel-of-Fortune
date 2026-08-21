@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Painted TV-studio backdrop for the stage (sits behind the gold pill).
+"""Painted TV-studio backdrop — recognizable set architecture, rendered
+sharp at high resolution: glowing light columns with fixture casings,
+metallic gold trim rails, paneled blue wall, corner sunburst fans,
+overhead rig lamps, and a glossy reflecting floor.
 
-Soft-focus wide shot: blue-violet wall, out-of-focus bokeh set lights,
-subtle beams, a glossy floor with smeared reflections, cyan stage line,
-near-black bottom edge. Deterministic. numpy + PIL only.
-
-Usage: python3 tools/gen_backdrop.py
+Only the light GLOWS are soft; the structure stays crisp.
+Deterministic. numpy + PIL only.  Usage: python3 tools/gen_backdrop.py
 """
 
 import os
@@ -14,12 +14,18 @@ import numpy as np
 
 from PIL import Image
 
-W, H = 2048, 1024
+W, H = 2560, 1280
 SEED = 7
+STAGE = 0.66
+TRIM_TOP = 0.15
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                    "docs", "assets", "textures", "studio_backdrop.png")
 
 rng = np.random.default_rng(SEED)
+
+yy, xx = np.mgrid[0:H, 0:W]
+u = xx / (W - 1)
+v = yy / (H - 1)
 
 
 def fft_blur(a, sy, sx):
@@ -29,106 +35,132 @@ def fft_blur(a, sy, sx):
     return np.fft.irfft2(np.fft.rfft2(a) * g, s=a.shape)
 
 
-def add_disc(img, cx, cy, r, color, gain):
-    """Soft gaussian bokeh disc, drawn only in a local window."""
-    x0, x1 = max(0, int(cx - 3 * r)), min(W, int(cx + 3 * r) + 1)
-    y0, y1 = max(0, int(cy - 3 * r)), min(H, int(cy + 3 * r) + 1)
-    if x0 >= x1 or y0 >= y1:
-        return
-    yy, xx = np.mgrid[y0:y1, x0:x1]
-    d2 = (xx - cx) ** 2 + (yy - cy) ** 2
-    # bokeh: bright plateau with soft gaussian skirt
-    core = np.exp(-0.5 * d2 / (r * r))
-    plateau = 1.0 / (1.0 + (d2 / (r * r)) ** 3)
-    disc = (0.55 * core + 0.45 * plateau) * gain
+def smoothstep(e0, e1, x):
+    t = np.clip((x - e0) / (e1 - e0), 0.0, 1.0)
+    return t * t * (3.0 - 2.0 * t)
+
+
+COLS = [(0.05, (110, 235, 255)), (0.165, (210, 130, 255)),
+        (0.29, (110, 235, 255)), (0.71, (110, 235, 255)),
+        (0.835, (210, 130, 255)), (0.95, (110, 235, 255))]
+
+col_zone = smoothstep(TRIM_TOP + 0.008, TRIM_TOP + 0.04, v) * \
+    (1.0 - smoothstep(STAGE - 0.025, STAGE - 0.004, v))
+
+
+def build_soft():
+    """Wall base + all light glows (gets a gentle blur)."""
+    img = np.zeros((H, W, 3))
+
+    # Paneled blue wall
+    wt = smoothstep(TRIM_TOP, STAGE, v)
+    img += (np.array([13.0, 19.0, 55.0])[None, None, :] +
+            np.array([18.0, 24.0, 52.0])[None, None, :] * wt[..., None])
+    sheen = np.exp(-((v - 0.40) ** 2) / 0.014)
+    img += np.array([9.0, 13.0, 28.0])[None, None, :] * sheen[..., None]
+
+    # Corner gold sunburst fans (behind the columns)
+    for cx0, cy0 in [(0.0, 0.13), (1.0, 0.13)]:
+        du = (u - cx0) * (W / H)
+        dv = v - cy0
+        rad = np.sqrt(du * du + dv * dv)
+        ang = np.arctan2(dv, du)
+        rays = 0.5 + 0.5 * np.tanh(2.5 * np.sin(ang * 26.0))
+        fan = (0.35 + 0.65 * rays) * (1.0 - smoothstep(0.28, 0.62, rad)) * \
+            smoothstep(TRIM_TOP - 0.01, TRIM_TOP + 0.03, v) * \
+            (1.0 - smoothstep(STAGE - 0.06, STAGE, v))
+        img += np.array([64.0, 46.0, 14.0])[None, None, :] * fan[..., None]
+
+    # Column glows
+    for cx, tint in COLS:
+        d = np.abs(u - cx)
+        core = np.exp(-(d ** 2) / (2 * 0.004 ** 2))
+        halo = np.exp(-(d ** 2) / (2 * 0.018 ** 2))
+        glow = (1.15 * core + 0.45 * halo) * col_zone
+        img += np.array(tint)[None, None, :] * glow[..., None]
+
+    # Rig lamp cones onto the wall
+    for i in range(9):
+        lx = 0.08 + 0.84 * i / 8.0
+        prog = np.clip((v - TRIM_TOP) / (STAGE - TRIM_TOP), 0, 1)
+        cone_w = 0.013 + 0.085 * prog
+        cone = np.exp(-((u - lx) ** 2) / (2 * cone_w ** 2)) * prog ** 0.5 * \
+            (1.0 - smoothstep(STAGE - 0.05, STAGE, v)) * \
+            smoothstep(TRIM_TOP, TRIM_TOP + 0.02, v)
+        img += np.array([66.0, 74.0, 108.0])[None, None, :] * cone[..., None] * 0.15
+
     for c in range(3):
-        img[y0:y1, x0:x1, c] += disc * color[c]
+        img[..., c] = fft_blur(img[..., c], 2.2, 2.2)
+    return img
 
 
 def main():
-    yy, xx = np.mgrid[0:H, 0:W]
-    u = xx / (W - 1)
-    v = yy / (H - 1)
-    img = np.zeros((H, W, 3))
+    img = build_soft()
 
-    stage = 0.68  # stage line (fraction of height)
+    # ---------- CRISP structure on top ----------
+    # Wall panel seams (sharp, subtle)
+    seam = np.abs(((u * 18.0) % 1.0) - 0.5)
+    wall_mask = smoothstep(TRIM_TOP, TRIM_TOP + 0.01, v) * (1.0 - smoothstep(STAGE - 0.01, STAGE, v))
+    img *= (1.0 - 0.14 * smoothstep(0.465, 0.5, seam) * wall_mask)[..., None]
 
-    # --- Wall: blue-violet gradient, brighter mid-left / mid-right ---
-    base_top = np.array([10.0, 8.0, 34.0])
-    base_mid = np.array([26.0, 24.0, 78.0])
-    wall = base_top[None, None, :] + (base_mid - base_top)[None, None, :] * \
-        (v[..., None] / stage).clip(0, 1)
-    lobe = (np.exp(-((u - 0.22) ** 2) / 0.03) +
-            np.exp(-((u - 0.78) ** 2) / 0.03))
-    wall += np.array([14.0, 12.0, 40.0])[None, None, :] * \
-        (lobe * (1.0 - np.abs(v / stage - 0.45)).clip(0, 1))[..., None]
-    # large-scale color variation
-    for tint, s in [((8, 4, 22), 260.0), ((4, 8, 26), 140.0)]:
-        n = fft_blur(rng.standard_normal((H, W)), s, s)
-        n = n / max(np.abs(n).max(), 1e-9)
-        wall += np.array(tint)[None, None, :] * n[..., None]
-    img += wall
+    # Column fixture casings: sharp dark edges + a crisp bright core line
+    for cx, tint in COLS:
+        d = np.abs(u - cx)
+        casing = smoothstep(0.0075, 0.009, d) * (1.0 - smoothstep(0.0105, 0.012, d))
+        img *= (1.0 - 0.6 * (casing * col_zone)[..., None])
+        core = 1.0 - smoothstep(0.0012, 0.002, d)
+        img += (np.array(tint) * 0.5 + np.array([128.0, 128.0, 128.0]))[None, None, :] * \
+            (core * col_zone)[..., None] * 0.8
 
-    # --- Bokeh set lights: warm amber + cool cyan clusters ---
-    warm = [(255, 190, 110), (255, 160, 80), (255, 214, 150)]
-    cool = [(110, 220, 255), (80, 170, 255), (150, 235, 255)]
-    for side in (0.16, 0.84):
-        for i in range(45):
-            cx = (side + rng.normal(0, 0.09)) * W
-            cy = (0.16 + abs(rng.normal(0, 0.16))) * H
-            if cy > stage * H * 0.92:
-                continue
-            r = rng.uniform(8, 40)
-            pal = warm if rng.random() < 0.55 else cool
-            color = np.array(pal[rng.integers(0, 3)]) / 255.0
-            corner_boost = 1.0 + 0.8 * (1.0 - cy / (stage * H))
-            gain = rng.uniform(10, 34) * corner_boost / (r ** 0.5)
-            add_disc(img, cx, cy, r, color * 255.0, gain / 255.0 * 14)
+    # Metallic gold trim rails (crisp, with specular)
+    deep_gold = np.array([110.0, 78.0, 22.0])
+    bright_gold = np.array([246.0, 202.0, 104.0])
+    for band_y, band_h in [(TRIM_TOP, 0.016), (STAGE - 0.010, 0.012)]:
+        inband = smoothstep(band_y - band_h, band_y - band_h + 0.003, v) * \
+            (1.0 - smoothstep(band_y + band_h - 0.003, band_y + band_h, v))
+        gt = np.clip((v - (band_y - band_h)) / (2 * band_h), 0, 1)
+        band_col = bright_gold[None, None, :] + \
+            (deep_gold - bright_gold)[None, None, :] * gt[..., None]
+        spec = np.exp(-((gt - 0.22) ** 2) / 0.02)
+        band_col += np.array([255.0, 246.0, 214.0])[None, None, :] * spec[..., None] * 0.5
+        img = img * (1.0 - inband[..., None]) + band_col * inband[..., None]
 
-    # --- Soft diagonal beams from the top corners ---
-    for (ox, slope, tint) in [(0.02, 0.55, (60, 40, 110)),
-                              (0.98, -0.55, (40, 50, 120)),
-                              (0.1, 0.8, (50, 30, 90)),
-                              (0.9, -0.8, (30, 45, 100))]:
-        d = (u - ox) * slope - (v - 0.0)
-        beam = np.exp(-(d ** 2) / 0.004)
-        img += np.array(tint)[None, None, :] * (beam * 0.09)[..., None] * \
-            (1.0 - v[..., None] / stage).clip(0, 1)
+    # Overhead rig zone: near-black with crisp lamps
+    rig = 1.0 - smoothstep(TRIM_TOP - 0.02, TRIM_TOP - 0.004, v)
+    img *= (1.0 - 0.86 * rig)[..., None]
+    for i in range(9):
+        lx = 0.08 + 0.84 * i / 8.0
+        d2 = ((u - lx) ** 2) * (W / H) ** 2 + (v - TRIM_TOP + 0.05) ** 2
+        lamp = np.exp(-d2 / (2 * 0.006 ** 2))
+        glow = np.exp(-d2 / (2 * 0.02 ** 2))
+        img += np.array([255.0, 228.0, 170.0])[None, None, :] * lamp[..., None]
+        img += np.array([200.0, 175.0, 120.0])[None, None, :] * glow[..., None] * 0.35
 
-    # blur the wall region softly (depth of field)
-    for c in range(3):
-        img[..., c] = fft_blur(img[..., c], 3.0, 3.0)
-
-    # --- Floor: mirrored, smeared, dark ---
-    line = int(stage * H)
-    floor_h = H - line
-    src = img[line - floor_h:line][::-1].copy()  # mirror of wall above
-    # vertical smear via repeated blur
-    for c in range(3):
-        src[..., c] = fft_blur(src[..., c], 14.0, 2.0)
-    depth = (np.arange(floor_h) / floor_h)[:, None, None]
-    floor = src * (0.30 * (1.0 - depth) ** 1.6)
-    floor += np.array([3.0, 4.0, 10.0])[None, None, :] * (1.0 - depth * 0.4)
-    img[line:] = floor
-
-    # --- Cyan stage-line glow ---
-    glow = np.exp(-((yy - line) ** 2) / (2 * 6.0 ** 2))
-    img += np.array([40.0, 140.0, 180.0])[None, None, :] * glow[..., None] * 0.55
+    # ---------- Stage line ----------
+    line = int(STAGE * H)
+    glow = np.exp(-((yy - line) ** 2) / (2 * 5.0 ** 2))
+    img += np.array([55.0, 170.0, 210.0])[None, None, :] * glow[..., None] * 0.6
     wide = np.exp(-((yy - line) ** 2) / (2 * 30.0 ** 2))
-    img += np.array([15.0, 50.0, 70.0])[None, None, :] * wide[..., None] * 0.4
+    img += np.array([16.0, 55.0, 75.0])[None, None, :] * wide[..., None] * 0.35
 
-    # --- Vignette + near-black bottom edge ---
-    vig = 1.0 - 0.55 * ((u - 0.5) ** 2 * 2.6 + (v - 0.42) ** 2 * 1.8)
-    img *= vig.clip(0.25, 1.0)[..., None]
-    bottom = ((v - 0.9) / 0.1).clip(0, 1)
+    # ---------- Floor: smeared reflection of the set ----------
+    floor_h = H - line
+    src = img[line - floor_h:line][::-1].copy()
+    for c in range(3):
+        src[..., c] = fft_blur(src[..., c], 12.0, 1.6)
+    depth = (np.arange(floor_h) / floor_h)[:, None, None]
+    img[line:] = src * (0.36 * (1.0 - depth) ** 1.5) + \
+        np.array([4.0, 5.0, 12.0])[None, None, :] * (1.0 - depth * 0.5)
+
+    # ---------- Finishing ----------
+    vig = 1.0 - 0.48 * ((u - 0.5) ** 2 * 2.2 + (v - 0.40) ** 2 * 1.5)
+    img *= vig.clip(0.32, 1.0)[..., None]
+    bottom = smoothstep(0.90, 1.0, v)
     img = img * (1.0 - bottom[..., None]) + \
         np.array([2.0, 3.0, 8.0])[None, None, :] * bottom[..., None]
-
-    # dither to kill banding
     img += rng.uniform(-1.2, 1.2, img.shape)
 
-    out = np.clip(img, 0, 255).astype(np.uint8)
-    Image.fromarray(out, "RGB").save(OUT, optimize=True)
+    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8), "RGB").save(OUT, optimize=True)
     print(f"wrote {OUT} ({os.path.getsize(OUT) / 1024:.0f} KB)")
 
 

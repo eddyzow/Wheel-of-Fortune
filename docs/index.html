@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheel of Fortune</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@800;900&display=swap"
       rel="stylesheet"
     />
     <link href="style.css" rel="stylesheet" />
@@ -85,11 +85,36 @@
       <button class="close-modal-btn">Close</button>
     </div>
 
+    <!-- Voice settings -->
+    <div id="settings-modal" class="modal" style="display: none">
+      <h1>Voice Solving</h1>
+      <p>
+        Buzz in with <b>Space</b> as usual — then just <b>say your answer</b>
+        instead of typing it. Powered by ElevenLabs Scribe.
+      </p>
+      <div class="settings-row">
+        <input
+          type="password"
+          id="el-key-input"
+          placeholder="Paste your ElevenLabs API key…"
+          autocomplete="off"
+        />
+        <button id="el-key-save">Save</button>
+      </div>
+      <p id="voice-status" class="voice-status"></p>
+      <p class="settings-note">
+        Your key is stored only in this browser (localStorage) and is sent
+        only to api.elevenlabs.io. Typing always works as a fallback.
+      </p>
+      <button class="close-modal-btn" id="settings-close">Close</button>
+    </div>
+
     <!-- In-game header -->
     <header id="game-header" class="hidden">
       <button id="back-btn">‹ Menu</button>
       <div id="header-title">Wheel of Fortune</div>
       <div class="header-right">
+        <button id="settings-btn" title="Voice settings">🎤</button>
         <button id="mute-btn" title="Toggle sound">🔊</button>
         <button id="about-btn">About</button>
       </div>
@@ -135,6 +160,7 @@
       <div id="solve-bar-content">
         <h3 id="solve-bar-title">Solve the Puzzle</h3>
         <p id="solve-bar-points"></p>
+        <span id="solve-bar-voice" class="hidden"></span>
         <input
           type="text"
           id="solve-bar-input"
