@@ -1878,5 +1878,937 @@
   {
     "category": "PHRASE",
     "puzzle": "MY BIG BREAK"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JUKEBOX"
+  },
+  {
+    "category": "THING",
+    "puzzle": "OXYGEN PUMP"
+  },
+  {
+    "category": "THING",
+    "puzzle": "WACKY QUIZ"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JADE FIGURINE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "FUZZY BATHROBE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JUMBO PUMPKIN"
+  },
+  {
+    "category": "THING",
+    "puzzle": "VIVID MEMORY"
+  },
+  {
+    "category": "THING",
+    "puzzle": "KAYAK PADDLE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "ZANY GADGET"
+  },
+  {
+    "category": "THING",
+    "puzzle": "OXYGEN MASK"
+  },
+  {
+    "category": "THING",
+    "puzzle": "QUILTED JACKET"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JUNK MAIL"
+  },
+  {
+    "category": "THING",
+    "puzzle": "VELVET JACKET"
+  },
+  {
+    "category": "THING",
+    "puzzle": "ZINC OXIDE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JOB OFFER"
+  },
+  {
+    "category": "THING",
+    "puzzle": "LAVA LAMP"
+  },
+  {
+    "category": "THING",
+    "puzzle": "KHAKI PANTS"
+  },
+  {
+    "category": "THING",
+    "puzzle": "BONGO DRUMS"
+  },
+  {
+    "category": "THING",
+    "puzzle": "PICKUP TRUCK"
+  },
+  {
+    "category": "THING",
+    "puzzle": "HOCKEY PUCK"
+  },
+  {
+    "category": "THING",
+    "puzzle": "FOG MACHINE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "BUBBLE WRAP"
+  },
+  {
+    "category": "THING",
+    "puzzle": "DUFFEL BAG"
+  },
+  {
+    "category": "THING",
+    "puzzle": "ZODIAC SIGN"
+  },
+  {
+    "category": "THING",
+    "puzzle": "VIVID DREAM"
+  },
+  {
+    "category": "THING",
+    "puzzle": "QUILL PEN"
+  },
+  {
+    "category": "THING",
+    "puzzle": "ONYX RING"
+  },
+  {
+    "category": "THING",
+    "puzzle": "IVORY KEYS"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JET PACK"
+  },
+  {
+    "category": "THING",
+    "puzzle": "MAXIMUM VOLUME"
+  },
+  {
+    "category": "THING",
+    "puzzle": "EXPIRED COUPON"
+  },
+  {
+    "category": "THING",
+    "puzzle": "WINDOW SQUEEGEE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "VANITY PLATE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "WIZARD HAT"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JUMPER CABLES"
+  },
+  {
+    "category": "THING",
+    "puzzle": "BOX OF CRAYONS"
+  },
+  {
+    "category": "THING",
+    "puzzle": "KETCHUP PACKET"
+  },
+  {
+    "category": "THING",
+    "puzzle": "COWBOY BOOTS"
+  },
+  {
+    "category": "THING",
+    "puzzle": "ZIP CODE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "QUICKSAND"
+  },
+  {
+    "category": "THING",
+    "puzzle": "HUGE JACKPOT"
+  },
+  {
+    "category": "THING",
+    "puzzle": "ZIGZAG PATTERN"
+  },
+  {
+    "category": "THING",
+    "puzzle": "FAX MACHINE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "WAXY CRAYON"
+  },
+  {
+    "category": "THING",
+    "puzzle": "BUZZING ALARM"
+  },
+  {
+    "category": "THING",
+    "puzzle": "PLAID PAJAMAS"
+  },
+  {
+    "category": "THING",
+    "puzzle": "JAZZY OUTFIT"
+  },
+  {
+    "category": "THING",
+    "puzzle": "PUFFY VEST"
+  },
+  {
+    "category": "THING",
+    "puzzle": "SQUEAKY HINGE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "WOBBLY WAGON"
+  },
+  {
+    "category": "THING",
+    "puzzle": "CHUNKY SWEATER"
+  },
+  {
+    "category": "THING",
+    "puzzle": "MUDDY BOOTS"
+  },
+  {
+    "category": "THING",
+    "puzzle": "BAMBOO FLUTE"
+  },
+  {
+    "category": "THING",
+    "puzzle": "KAZOO BAND"
+  },
+  {
+    "category": "THING",
+    "puzzle": "GRUMPY MOOD"
+  },
+  {
+    "category": "THING",
+    "puzzle": "BONUS PUZZLE"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "QUITE COZY"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "WICKEDLY FUNNY"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "JAM-PACKED"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "GOOD KARMA"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "LUCKY GUESS"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "MAJOR BUZZ"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "WHAT A HOAX"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "VERY FUNKY"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "HALF A DOZEN"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "JUMP FOR JOY"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "OFF THE GRID"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "A MIXED BAG"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "WOW FACTOR"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "GOOD VIBES"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "MY LUCKY DAY"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "WORTH A SHOT"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "PIPING HOT"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "QUID PRO QUO"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "FUZZY LOGIC"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "ZIP YOUR LIP"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "AWKWARD HUG"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "BIG PAYOFF"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "OUT OF WHACK"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "PACKED TO GO"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "OH MY GOODNESS"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "WHY BOTHER"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "YOU WISH"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "GO FOR BROKE"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "LUCKY HUNCH"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "TOUGH COOKIE"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "HAPPY THOUGHTS"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "FAIR AND SQUARE"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "BUCKLE UP"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "IN A FOG"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "ZERO REGRETS"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "QUITE A VIEW"
+  },
+  {
+    "category": "PHRASE",
+    "puzzle": "JOKING AROUND"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "WAXING A KAYAK"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "JUGGLING KIWIS"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "ZIPPING MY JACKET"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "MIXING JUICE"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "VACUUMING QUICKLY"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "KNITTING QUIETLY"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "DODGING TRAFFIC"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "PACKING BOXES"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "WALKING BACKWARD"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "HUMMING A JINGLE"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "MAKING FUDGE"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "JOGGING UPHILL"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "BLOWING BUBBLES"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "QUOTING SHAKESPEARE"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "BUYING AVOCADOS"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "WHIPPING UP GRAVY"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "FIXING MY BIKE"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "DOZING OFF"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "MOPPING UP"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "GOING KAYAKING"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "PICKING PUMPKINS"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "WAVING GOODBYE"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "BAKING MUFFINS"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "PADDLING UPWIND"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "UNPACKING BOXES"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "GAZING UPWARD"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "CHOPPING BAMBOO"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "AVOIDING JUNK FOOD"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "BUZZING WITH JOY"
+  },
+  {
+    "category": "WHAT ARE YOU DOING?",
+    "puzzle": "GRABBING A CAB"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "KUNG FU MASTER"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "LUCKY WINNER"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "WACKY UNCLE"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "BOXING CHAMP"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "YOUNG PRODIGY"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "HUMBLE HERO"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "VILLAGE BAKER"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "JOVIAL JUDGE"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "PROUD PAPA"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "QUIZ CHAMPION"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "FUNKY DRUMMER"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "WHIZ KID"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "PICKY EATER"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "BUSY BEEKEEPER"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "GOOFY MASCOT"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "GRUMPY UMPIRE"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "BOLD EXPLORER"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "QUIRKY GENIUS"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "YOGA GURU"
+  },
+  {
+    "category": "PERSON",
+    "puzzle": "KIND PHARMACIST"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "ZESTY GUACAMOLE"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "QUINCE JAM"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "KIWI JUICE"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "JUMBO SHRIMP"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "ZUCCHINI BREAD"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "VEGGIE PIZZA"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "FIZZY DRINK"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "QUICHE LORRAINE"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "BAKED ZITI"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "MANGO CHUTNEY"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "WASABI PEAS"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "OXTAIL SOUP"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "PUMPKIN FUDGE"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "FIG JAM"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "CHUNKY SALSA"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "JAVA WITH CREAM"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "FROZEN CUSTARD"
+  },
+  {
+    "category": "FOOD & DRINK",
+    "puzzle": "BUBBLY CIDER"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "FOGGY HARBOR"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "JAZZ CLUB"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "QUAINT VILLAGE"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "DUSTY ATTIC"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "MUDDY BACKYARD"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "WAX MUSEUM"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "BUSY CROSSWALK"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "ZEN GARDEN"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "KARAOKE BOOTH"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "CROWDED BAZAAR"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "VACANT LOBBY"
+  },
+  {
+    "category": "PLACE",
+    "puzzle": "BACKWOODS CAMP"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "MUSK OX"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "JACKRABBIT"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "QUARTER HORSE"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "GRAY WOLF"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "JAGUAR CUB"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "FUZZY KOALA"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "PYGMY GOAT"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "CEDAR WAXWING"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "KUMQUAT TREE"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "BUZZING WASP"
+  },
+  {
+    "category": "LIVING THING",
+    "puzzle": "MYSTERY BUG"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "POP QUIZ"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "FIREWORKS SHOW"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "QUICK GETAWAY"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "SUDDEN BLIZZARD"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "JURY DUTY"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "AWKWARD MOMENT"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "BUMPY FLIGHT"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "FOGGY MORNING"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "MIDDAY YAWN"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "SKI JUMP FINAL"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "BACKYARD CAMPOUT"
+  },
+  {
+    "category": "EVENT",
+    "puzzle": "PUPPY ADOPTION DAY"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "WHOOPEE CUSHION"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "YO-YO TRICK"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "KAZOO SOLO"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "JUMBO CROSSWORD"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "VIDEO GAME COMBO"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "BACKYARD CORNHOLE"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "QUICK RIDDLE"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "BOCCE BALL"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "PINBALL WIZARD"
+  },
+  {
+    "category": "FUN & GAMES",
+    "puzzle": "LUCKY BINGO CARD"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "JAZZ PIANIST"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "TAXI DRIVER"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "JUDO COACH"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "PUPPET MAKER"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "BLACKSMITH"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "LUMBERJACK"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "DOG GROOMER"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "MAGICIAN'S HELPER"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "BAGPIPE PLAYER"
+  },
+  {
+    "category": "OCCUPATION",
+    "puzzle": "KAYAK GUIDE"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "FUZZY DICE"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "WAX FIGURES"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "JUMBO PRIZES"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "PIANO KEYS"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "BOBBY PINS"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "GYM SOCKS"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "COZY BLANKETS"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "QUIRKY HOBBIES"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "VIVID COLORS"
+  },
+  {
+    "category": "THINGS",
+    "puzzle": "BACKUP KEYS"
+  },
+  {
+    "category": "FICTIONAL CHARACTER",
+    "puzzle": "WIZARD OF OZ"
+  },
+  {
+    "category": "FICTIONAL CHARACTER",
+    "puzzle": "PAUL BUNYAN"
+  },
+  {
+    "category": "FICTIONAL CHARACTER",
+    "puzzle": "JACK FROST"
+  },
+  {
+    "category": "FICTIONAL CHARACTER",
+    "puzzle": "MOBY DICK"
+  },
+  {
+    "category": "FICTIONAL CHARACTER",
+    "puzzle": "QUICK DRAW MCGRAW"
+  },
+  {
+    "category": "FICTIONAL CHARACTER",
+    "puzzle": "PUSS IN BOOTS"
+  },
+  {
+    "category": "FICTIONAL CHARACTER",
+    "puzzle": "HUMPTY DUMPTY"
   }
 ]

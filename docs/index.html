@@ -5,99 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheel of Fortune</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700;800&family=Roboto:wght@800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto:wght@800;900&display=swap"
       rel="stylesheet"
     />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link href="style.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1/dist/confetti.browser.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+        }
+      }
+    </script>
   </head>
   <body>
-    <canvas id="particle-canvas"></canvas>
+    <canvas id="board-canvas"></canvas>
+
     <div id="modal-overlay"></div>
 
+    <!-- Main menu -->
     <div id="intro-modal" class="modal">
-      <h1>Welcome to Wheel of Fortune!</h1>
-      <p>Select a game mode to get started.</p>
+      <h1 class="menu-title">WHEEL <span>OF</span> FORTUNE</h1>
+      <p class="menu-tagline">Pick a game mode</p>
 
-      <div id="game-mode-selection">
-        <label class="mode-label">
-          <input type="radio" name="gameMode" value="classic" checked />
-          <span>Classic</span>
-        </label>
-        <label class="mode-label">
-          <input type="radio" name="gameMode" value="tossup" />
-          <span>Toss-Up</span>
-        </label>
-        <label class="mode-label">
-          <input type="radio" name="gameMode" value="bonus" />
-          <span>Bonus Round</span>
-        </label>
+      <div id="mode-cards">
+        <button class="mode-card" data-mode="full">
+          <span class="mode-emoji">🏆</span>
+          <span class="mode-name">Full Game</span>
+          <span class="mode-desc">Toss-up, two rounds, then the bonus round. The complete show.</span>
+        </button>
+        <button class="mode-card" data-mode="classic">
+          <span class="mode-emoji">🎡</span>
+          <span class="mode-name">Classic</span>
+          <span class="mode-desc">Endless rounds. Spin with Space, guess consonants, buy vowels.</span>
+        </button>
+        <button class="mode-card" data-mode="tossup">
+          <span class="mode-emoji">⚡</span>
+          <span class="mode-name">Toss-Up</span>
+          <span class="mode-desc">Letters appear one by one. Buzz in fast — points tick away.</span>
+        </button>
+        <button class="mode-card" data-mode="triple">
+          <span class="mode-emoji">🔥</span>
+          <span class="mode-name">Triple Toss-Up</span>
+          <span class="mode-desc">Three toss-ups: $1,000, $2,000, $3,000. One guess each.</span>
+        </button>
+        <button class="mode-card" data-mode="bonus">
+          <span class="mode-emoji">💎</span>
+          <span class="mode-name">Bonus Round</span>
+          <span class="mode-desc">R S T L N E, three consonants, a vowel — and 10 seconds.</span>
+        </button>
       </div>
 
-      <div id="classic-rules" class="rules-container">
-        <p>Here's how to play <strong>Classic</strong> mode:</p>
-        <ul>
-          <li>Press the <strong>Spacebar</strong> to spin the wheel.</li>
-          <li>
-            After spinning, guess a <strong>consonant</strong> on your keyboard.
-          </li>
-          <li>
-            To buy a <strong>vowel</strong>, press the key when it's your turn
-            to spin (costs $250).
-          </li>
-          <li>
-            Don't hit <strong>Bankrupt</strong> or <strong>Lose a Turn</strong>!
-          </li>
-          <li>
-            Click the <strong>Solve Puzzle</strong> button if you know the
-            answer!
-          </li>
-        </ul>
-      </div>
-
-      <div id="tossup-rules" class="rules-container" style="display: none">
-        <p>Here's how to play <strong>Toss-Up</strong> mode:</p>
-        <ul>
-          <li>
-            Letters appear one by one. Points start at 1000 and decrease over
-            time.
-          </li>
-          <li>
-            Press the <strong>Spacebar</strong> to buzz in when you think you
-            know the answer.
-          </li>
-          <li>
-            A wrong guess won't end the round, but the clock keeps ticking!
-          </li>
-        </ul>
-      </div>
-
-      <div id="bonus-rules" class="rules-container" style="display: none">
-        <p>Here's how to play <strong>Bonus Round</strong> mode:</p>
-        <ul>
-          <li>
-            A random puzzle from the Bonus Puzzle Bank will appear, and you will
-            get letters R, S, T, L, N, and E.
-          </li>
-          <li>Select three consonants and a vowel for help.</li>
-          <li>You'll get 10 seconds to buzz in and guess the puzzle!</li>
-          <li>Warning: it's very difficult!</li>
-        </ul>
-      </div>
-
-      <div class="modal-footer-buttons">
+      <div class="menu-footer">
+        <span id="puzzle-count"></span>
         <button id="intro-about-btn">About</button>
-        <button id="start-game-btn">Start Game</button>
       </div>
     </div>
 
+    <!-- About -->
     <div id="about-modal" class="modal" style="display: none">
       <h1>About Wheel of Fortune</h1>
       <p>
         This is a fan-made recreation of the popular TV game show, built with
-        HTML, CSS, and JavaScript.
+        HTML, CSS, WebGL, and JavaScript.
       </p>
       <p>
         All rights to the "Wheel of Fortune" name, logo, and game concepts are
@@ -113,212 +85,52 @@
       <button class="close-modal-btn">Close</button>
     </div>
 
+    <!-- In-game header -->
     <header id="game-header" class="hidden">
-      <button id="back-btn">‹ Back to Menu</button>
+      <button id="back-btn">‹ Menu</button>
       <div id="header-title">Wheel of Fortune</div>
-      <button id="about-btn">About</button>
+      <div class="header-right">
+        <button id="mute-btn" title="Toggle sound">🔊</button>
+        <button id="about-btn">About</button>
+      </div>
     </header>
 
-    <div id="wallpaper"></div>
-    <div class="main-container hidden">
-      <div id="category-label" class="category-label"></div>
+    <!-- Game -->
+    <div id="game-root" class="hidden">
+      <div id="category-label" class="category-label empty"></div>
 
       <div class="game-info-and-controls">
-        <div id="player-score" class="info-display">
-          Score: $<span id="score-amount">0</span>
+        <div id="player-score" class="info-display hidden">
+          <span class="info-caption">SCORE</span>
+          $<span id="score-amount">0</span>
         </div>
+        <div id="round-indicator" class="info-display hidden"></div>
         <div id="tossup-points-display" class="info-display hidden">
-          Points: <span id="tossup-points">1000</span>
+          <span class="info-caption">POINTS</span>
+          <span id="tossup-points">1000</span>
         </div>
         <div id="avg-points-display" class="info-display hidden">
-          Avg Points: <span id="avg-points">0</span>
+          <span class="info-caption">AVG</span>
+          <span id="avg-points">0</span>
         </div>
-        <div id="message-label" class="info-display">Spin to begin!</div>
-        <div id="solve-btn-container">
+        <div id="message-label" class="info-display"></div>
+        <div id="solve-btn-container" class="hidden">
           <button id="solve-btn">Solve Puzzle</button>
         </div>
       </div>
-      <div id="bonus-round-info" class="info-display hidden">
-        <p id="bonus-round-message"></p>
-        <div id="bonus-letter-picks-container" class="hidden">
-          <p>Your letters: <span id="bonus-letters-picked"></span></p>
-        </div>
-      </div>
-      <div class="puzzle-board-glow-container">
-        <div class="puzzle-board-border">
-          <div class="puzzle-board">
-            <div class="puzzle-row" id="row1">
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-            </div>
-            <div class="puzzle-row" id="row2">
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-            </div>
-            <div class="puzzle-row" id="row3">
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-            </div>
-            <div class="puzzle-row" id="row4">
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-              <div class="tile-container">
-                <span class="tile-letter"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <img id="ptr" src="assets/images/wheel-pointer.png" />
-      <img id="wheel" src="assets/images/wheel.png" />
+      <div id="letter-tracker"></div>
+
+      <div id="board-region"></div>
+
+      <div id="wheel-dock" class="hidden">
+        <canvas id="wheel-canvas"></canvas>
+      </div>
     </div>
 
+    <div id="round-banner"></div>
+
+    <!-- Solve bar -->
     <div id="bottom-solve-bar">
       <div id="solve-bar-content">
         <h3 id="solve-bar-title">Solve the Puzzle</h3>
@@ -326,7 +138,7 @@
         <input
           type="text"
           id="solve-bar-input"
-          placeholder="Type your answer..."
+          placeholder="Type your answer…"
           autocomplete="off"
         />
         <button id="solve-bar-submit-btn">Submit</button>
@@ -334,6 +146,6 @@
       <button id="solve-bar-close-btn">×</button>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>

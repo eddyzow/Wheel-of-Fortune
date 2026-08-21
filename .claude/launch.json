@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wof",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["tools/serve.py", "8641"],
+      "port": 8641
+    }
+  ]
+}
