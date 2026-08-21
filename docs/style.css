@@ -109,10 +109,10 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 7px;
   width: 100%;
   height: 100vh;
-  padding: 72px 0 6px;
+  padding: 62px 0 0;
   box-sizing: border-box;
 }
 
@@ -124,8 +124,8 @@ button {
   border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  font-size: clamp(1.4rem, 2.4vw, 2.2rem);
-  padding: 10px 34px;
+  font-size: clamp(1.15rem, 1.9vw, 1.7rem);
+  padding: 6px 28px;
   letter-spacing: 0.12em;
   min-height: 1.4em;
   transition: opacity 0.3s;
@@ -143,8 +143,8 @@ button {
   background: var(--panel);
   border: 1px solid var(--panel-border);
   border-radius: 14px;
-  padding: 10px 22px;
-  min-height: 72px;
+  padding: 6px 18px;
+  min-height: 58px;
   backdrop-filter: blur(8px);
 }
 
@@ -248,8 +248,8 @@ button {
 /* --- Letter tracker --- */
 #letter-tracker {
   display: flex;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 3px 12px;
   background: var(--panel);
   border: 1px solid var(--panel-border);
   border-radius: 10px;
@@ -276,27 +276,34 @@ button {
 
 /* --- Wheel dock: lives in the layout flow, so it can never overlap
        the board — hiding it hands the space back to the board region. --- */
+/* The wheel stays SMALL and docked at the bottom while you play (the board
+   keeps the screen), then swells into frame while it spins — like the
+   broadcast cutting to the wheel. */
 #wheel-dock {
   flex: 0 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
+  position: relative;
+  height: 18vh;
   width: 100%;
-  margin-bottom: -10vh;
   pointer-events: none;
-  filter: drop-shadow(0 -6px 28px rgba(0, 0, 0, 0.55));
-  transition: transform 0.7s cubic-bezier(0.22, 1.35, 0.36, 1);
-}
-
-/* Camera push-in on the wheel while it spins */
-#wheel-dock.spinning {
-  transform: translateY(-3vh) scale(1.12);
 }
 
 #wheel-canvas {
+  position: absolute;
+  left: 50%;
+  bottom: -14vh;
   width: clamp(40rem, 54vw, 64rem);
   aspect-ratio: 2 / 1;
   display: block;
+  transform: translateX(-50%) scale(0.95);
+  transform-origin: center bottom;
+  filter: drop-shadow(0 -6px 28px rgba(0, 0, 0, 0.55));
+  transition: transform 0.8s cubic-bezier(0.22, 1.3, 0.36, 1),
+    bottom 0.8s cubic-bezier(0.22, 1.3, 0.36, 1);
+}
+
+#wheel-dock.spinning #wheel-canvas {
+  transform: translateX(-50%) scale(1.24);
+  bottom: -2vh;
 }
 
 /* --- Round banner --- */

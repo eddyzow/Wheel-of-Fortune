@@ -525,7 +525,7 @@ export class Board3D {
     // Extra vertical headroom: the low camera angle pushes the pill's
     // bottom down in screen space, so it needs more margin than the width.
     const boardW = Math.max(ROW_LENGTHS[1] * PITCH_X + 2.1, PILL_HALF_W * 2.06);
-    const boardH = Math.max(4 * PITCH_Y + 1.9, PILL_HALF_H * 2.55);
+    const boardH = Math.max(4 * PITCH_Y + 1.9, PILL_HALF_H * 2.38);
     const vfov = (this.camera.fov * Math.PI) / 180;
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * this.camera.aspect);
     const distW = boardW / 2 / Math.tan(hfov / 2);
