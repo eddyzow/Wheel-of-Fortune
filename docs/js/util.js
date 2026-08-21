@@ -52,6 +52,23 @@ export function animate(duration, onUpdate, ease = easeOutCubic) {
 
 export const fmtMoney = (n) => "$" + n.toLocaleString("en-US");
 
+// Soundex: words that SOUND alike get the same code (PIECE ≡ PEACE), while
+// different words with similar spelling don't (HELP ≠ WELL). Used to judge
+// spoken solves fairly.
+export function soundex(word) {
+  const w = word.toUpperCase().replace(/[^A-Z]/g, "");
+  if (!w) return "";
+  const codes = { B: 1, F: 1, P: 1, V: 1, C: 2, G: 2, J: 2, K: 2, Q: 2, S: 2, X: 2, Z: 2, D: 3, T: 3, L: 4, M: 5, N: 5, R: 6 };
+  let out = w[0];
+  let prev = codes[w[0]] || 0;
+  for (let i = 1; i < w.length && out.length < 4; i++) {
+    const c = codes[w[i]] || 0;
+    if (c && c !== prev) out += c;
+    if (w[i] !== "H" && w[i] !== "W") prev = c;
+  }
+  return out.padEnd(4, "0");
+}
+
 // Edit distance, used to forgive small speech-to-text slips on spoken solves.
 export function levenshtein(a, b) {
   if (a === b) return 0;

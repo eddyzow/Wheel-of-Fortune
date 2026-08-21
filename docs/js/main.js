@@ -105,15 +105,32 @@ function wireSettings() {
   const keyInput = document.getElementById("el-key-input");
   const status = document.getElementById("voice-status");
 
+  const toggleRow = document.getElementById("voice-toggle-row");
+  const toggleBtn = document.getElementById("voice-toggle-btn");
+
   const refresh = () => {
-    if (voice.isEnabled()) {
-      status.textContent = "✅ Voice solving is ON — buzz with Space, then speak.";
-      keyInput.placeholder = "Key saved (paste a new one to replace, or Save empty to remove)";
-    } else {
+    const hasKey = !!voice.getKey();
+    toggleRow.classList.toggle("hidden", !hasKey);
+    if (!hasKey) {
       status.textContent = "Voice solving is off — paste an ElevenLabs API key to enable.";
       keyInput.placeholder = "Paste your ElevenLabs API key…";
+      return;
+    }
+    keyInput.placeholder = "Key saved (paste a new one to replace, or Save empty to remove)";
+    if (voice.isEnabled()) {
+      status.textContent = "✅ Voice solving is ON — buzz with Space, then speak.";
+      toggleBtn.textContent = "🔊 Voice solving: ON — click to turn off";
+    } else {
+      status.textContent = "Voice solving is OFF (key saved) — solves are typed.";
+      toggleBtn.textContent = "🔇 Voice solving: OFF — click to turn on";
     }
   };
+
+  toggleBtn.addEventListener("click", () => {
+    voice.setVoiceOn(!voice.isVoiceOn());
+    if (!voice.isEnabled()) voice.release();
+    refresh();
+  });
 
   document.getElementById("settings-btn").addEventListener("click", () => {
     document.getElementById("modal-overlay").style.display = "block";
@@ -130,6 +147,37 @@ function wireSettings() {
   keyInput.addEventListener("keydown", (e) => {
     e.stopPropagation();
     if (e.key === "Enter") document.getElementById("el-key-save").click();
+  });
+
+  // Mic test: record 3s, play it back, and (if a key is saved) show what
+  // Scribe hears — separates capture problems from API problems.
+  const testBtn = document.getElementById("mic-test-btn");
+  const testResult = document.getElementById("mic-test-result");
+  testBtn.addEventListener("click", async () => {
+    testBtn.disabled = true;
+    try {
+      testResult.textContent = "🔴 Recording 3 seconds — say a puzzle…";
+      const blob = await voice.testRecord(3000);
+      testResult.textContent = `▶️ Playing back (${(blob.size / 1024).toFixed(0)} KB)…`;
+      const url = URL.createObjectURL(blob);
+      const player = new Audio(url);
+      await player.play();
+      await new Promise((r) => (player.onended = r));
+      URL.revokeObjectURL(url);
+      if (voice.isEnabled()) {
+        testResult.textContent = "✨ Transcribing…";
+        const text = await voice.transcribe(blob);
+        testResult.textContent = text
+          ? `🗣 Scribe heard: “${text}”`
+          : "⚠️ Scribe heard nothing — check playback volume/mic device.";
+      } else {
+        testResult.textContent = "Playback done. Save an API key to test transcription too.";
+      }
+    } catch (e) {
+      testResult.textContent = "⚠️ Mic test failed: " + (e?.message || e);
+    } finally {
+      testBtn.disabled = false;
+    }
   });
 }
 
@@ -155,6 +203,9 @@ async function startMode(mode) {
   ui.setCategory("");
   game.board.reset();
 
+  // Warm the mic now so the first spoken solve records from its first word.
+  voice.warmup();
+
   try {
     if (mode === "classic") await runClassic();
     else if (mode === "full") await runFullGame();
@@ -165,6 +216,7 @@ async function startMode(mode) {
     if (!(e instanceof AbortGame)) console.error(e);
   } finally {
     running = false;
+    voice.release(); // mic (and its indicator) off at the menu
     stopAllMusic();
     game.board.reset();
     ui.setCategory("");

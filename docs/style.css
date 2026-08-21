@@ -598,6 +598,27 @@ button {
   animation: voice-pulse 1.6s ease-in-out infinite;
 }
 
+/* Voice-first solve: a compact listening pill, no text field */
+#bottom-solve-bar.voice-mode {
+  width: auto;
+  max-width: 480px;
+  padding: 14px 46px 14px 26px;
+}
+
+#bottom-solve-bar.voice-mode #solve-bar-input,
+#bottom-solve-bar.voice-mode #solve-bar-submit-btn {
+  display: none;
+}
+
+#bottom-solve-bar.voice-mode #solve-bar-content {
+  padding-right: 12px;
+  gap: 14px;
+}
+
+#bottom-solve-bar.voice-mode #solve-bar-voice {
+  font-size: 1.35em;
+}
+
 @keyframes voice-pulse {
   50% {
     opacity: 0.55;
@@ -639,6 +660,22 @@ button {
 .voice-status {
   font-weight: 600;
   color: var(--gold-bright);
+}
+
+#mic-test-btn {
+  flex: 1;
+  padding: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#mic-test-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 .settings-note {

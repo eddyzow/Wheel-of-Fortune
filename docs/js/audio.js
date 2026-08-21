@@ -100,3 +100,9 @@ export function setMuted(m) {
 export function isMuted() {
   return muted;
 }
+
+// Duck all game audio while the mic is listening, so music/SFX don't
+// bleed into the recording and pollute the transcription.
+export function duck(on) {
+  Howler.volume(on ? 0.08 : 1.0);
+}

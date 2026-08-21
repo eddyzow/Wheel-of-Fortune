@@ -1,7 +1,7 @@
 // Game modes: Classic, Full Game, Endless Toss-Up, Triple Toss-Up, Bonus.
 // Each mode is an async function driven by an awaitable input queue.
 
-import { delay, rand, shuffle, fmtMoney, levenshtein } from "./util.js";
+import { delay, rand, shuffle, fmtMoney } from "./util.js";
 import { alphaOnly, layoutPuzzle, VOWELS } from "./puzzles.js";
 import * as ui from "./ui.js";
 import * as fx from "./fx.js";
@@ -14,6 +14,37 @@ import {
 
 const VOWEL_COST = 250;
 const GIVEN_LETTERS = ["R", "S", "T", "L", "N", "E"];
+
+// True homophones + common spelling variants — the ONLY forgiveness the
+// spoken-answer judge grants. Same pronunciation, different spelling;
+// anything else (BATTERED/BUTTERED, HELP/WELL, IN/ON) is just wrong.
+const HOMOPHONE_GROUPS = [
+  ["PIECE", "PEACE"], ["THEIR", "THERE", "THEYRE"], ["TO", "TOO", "TWO"],
+  ["FOR", "FOUR", "FORE"], ["ONE", "WON"], ["HEAR", "HERE"],
+  ["KNOW", "NO"], ["KNIGHT", "NIGHT"], ["RIGHT", "WRITE", "RITE"],
+  ["SEA", "SEE"], ["SON", "SUN"], ["FLOUR", "FLOWER"], ["BEAR", "BARE"],
+  ["PAIR", "PEAR", "PARE"], ["WEAR", "WHERE", "WARE"], ["WEEK", "WEAK"],
+  ["STEEL", "STEAL"], ["BRAKE", "BREAK"], ["PLANE", "PLAIN"],
+  ["SAIL", "SALE"], ["TAIL", "TALE"], ["WAIT", "WEIGHT"], ["WAY", "WEIGH"],
+  ["MADE", "MAID"], ["MAIL", "MALE"], ["RAIN", "REIGN", "REIN"],
+  ["ROLE", "ROLL"], ["SOLE", "SOUL"], ["SOME", "SUM"], ["HOLE", "WHOLE"],
+  ["HOUR", "OUR"], ["EIGHT", "ATE"], ["BUY", "BY", "BYE"],
+  ["CENT", "SENT", "SCENT"], ["CELL", "SELL"], ["DEAR", "DEER"],
+  ["FAIR", "FARE"], ["GREAT", "GRATE"], ["HEEL", "HEAL"], ["MEAT", "MEET"],
+  ["PAIL", "PALE"], ["READ", "REED", "RED"], ["SUITE", "SWEET"],
+  ["THREW", "THROUGH"], ["TIDE", "TIED"], ["TOE", "TOW"], ["WOOD", "WOULD"],
+  ["BOARD", "BORED"], ["PEDAL", "PEDDLE", "PETAL"], ["BERRY", "BURY"],
+  ["CHILI", "CHILLY", "CHILE"], ["CEREAL", "SERIAL"], ["AISLE", "ISLE"],
+  ["GRAY", "GREY"], ["THEATER", "THEATRE"], ["DONUT", "DOUGHNUT"],
+  ["BLUE", "BLEW"], ["NEW", "KNEW"], ["KNOT", "NOT"], ["HAIR", "HARE"],
+  ["STAIR", "STARE"], ["PEAK", "PEEK", "PIQUE"], ["WAIST", "WASTE"],
+];
+const HOMOPHONE_MAP = new Map();
+HOMOPHONE_GROUPS.forEach((group, gi) =>
+  group.forEach((w) => HOMOPHONE_MAP.set(w, gi))
+);
+const sameHomophone = (a, b) =>
+  HOMOPHONE_MAP.has(a) && HOMOPHONE_MAP.get(a) === HOMOPHONE_MAP.get(b);
 
 export class AbortGame extends Error {
   constructor() {
@@ -136,13 +167,27 @@ export class Game {
     const target = alphaOnly(puzzle.puzzle);
     if (!a.length) return false;
     if (a === target) return true;
-    // Spoken answers: forgive small transcription slips ("wont" vs "won't"
-    // already normalizes away; this covers e.g. "there" vs "their").
+    // Spoken answers: judge WORD BY WORD, word count matching exactly.
+    // A word passes ONLY if it's exact or a listed true homophone —
+    // no fuzzy metric at all (they kept accepting different words:
+    // HELP/WELL, IN/ON, HOSTEL/MANTEL, BATTERED/BUTTERED).
     if (ui.wasVoiceAttempt()) {
-      const tolerance = Math.max(1, Math.floor(target.length / 8));
-      return levenshtein(a, target) <= tolerance;
+      const words = (s) =>
+        s.toUpperCase().replace(/[^A-Z0-9 ]/g, "").split(/\s+/).filter(Boolean);
+      const aw = words(attempt);
+      const tw = words(puzzle.puzzle);
+      if (aw.length !== tw.length) return false;
+      return aw.every((w, i) => w === tw[i] || sameHomophone(w, tw[i]));
     }
     return false;
+  }
+
+  // "Not quite" feedback that shows what the mic heard, so bad
+  // transcriptions are visible instead of mysterious.
+  heardSuffix(attempt) {
+    if (!ui.wasVoiceAttempt()) return "";
+    const safe = (attempt || "").replace(/[<>&]/g, "").slice(0, 60);
+    return safe ? ` (heard: “${safe}”)` : "";
   }
 
   puzzleLetters(puzzle) {
@@ -221,8 +266,8 @@ export class Game {
           break; // solved!
         }
         SFX.buzzer.play();
-        ui.setMessage("Not quite — keep going!");
-        await this.sleep(1200);
+        ui.setMessage(`Not quite${this.heardSuffix(attempt)} — keep going!`);
+        await this.sleep(1800);
         readyMessage();
         continue;
       }
@@ -455,9 +500,13 @@ export class Game {
         if (oneShot) {
           finish("failed");
           this.failReason = "wrong";
+          this.failHeard = this.heardSuffix(attempt);
           break;
         }
-        // Resume
+        // Resume (briefly show what was heard on a spoken miss)
+        if (attempt !== null && ui.wasVoiceAttempt()) {
+          ui.setMessage(`Not it${this.heardSuffix(attempt)} — keep listening!`);
+        }
         this.board.setGlow("green");
         lastTick = performance.now();
         running = true;
@@ -483,9 +532,12 @@ export class Game {
       this.board.setGlow(null);
       SFX.buzzer.play();
       ui.setMessage(
-        this.failReason === "wrong" ? "Sorry, that's not it!" : "Time's up!"
+        this.failReason === "wrong"
+          ? `Sorry, that's not it!${this.failHeard || ""}`
+          : "Time's up!"
       );
       this.failReason = null;
+      this.failHeard = null;
     }
     await this.revealAllRemaining({ shuffled: true, interval: 90 });
     await this.sleep(1200);
@@ -611,6 +663,7 @@ export class Game {
         const attempt = await ui.showSolveBar({ title: "Solve the bonus puzzle!" });
         this.check();
         won = attempt !== null && this.isSolved(attempt, puzzle);
+        this.lastBonusAttempt = attempt;
         break;
       }
     } finally {
@@ -629,7 +682,9 @@ export class Game {
       await this.revealAllRemaining({ interval: 120 });
     } else {
       SFX.buzzer.play();
-      ui.setMessage(`So close! It was: <b>"${puzzle.puzzle}"</b>`);
+      ui.setMessage(
+        `So close!${this.heardSuffix(this.lastBonusAttempt)} It was: <b>"${puzzle.puzzle}"</b>`
+      );
       await this.sleep(1000);
       SFX.bonusLose.play();
       this.board.setGlow(null);

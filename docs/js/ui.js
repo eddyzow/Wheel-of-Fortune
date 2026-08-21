@@ -1,7 +1,7 @@
 // DOM layer: messages, scores, solve bar, banners, letter tracker, menu.
 
 import { fmtMoney } from "./util.js";
-import { SFX } from "./audio.js";
+import { SFX, duck } from "./audio.js";
 import * as voice from "./voice.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -119,25 +119,38 @@ function stopVoiceCapture() {
   voiceCapture?.cancel();
   voiceCapture = null;
   voiceStatus("");
+  duck(false);
+}
+
+// Voice failed or heard nothing → bring the keyboard back.
+function revealTyping(statusHtml) {
+  els.solveBar.classList.remove("voice-mode");
+  voiceStatus(statusHtml || "");
+  els.solveInput.focus();
 }
 
 // Listen for a spoken answer and auto-submit its transcript.
 function startVoiceCapture() {
   if (!voice.isEnabled()) return;
   const mySession = solveResolve;
+  duck(true); // quiet the game so the mic hears only the player
   voiceStatus("🎤 listening…");
   const capture = voice.recordUtterance({
     onSpeech: () => solveResolve === mySession && voiceStatus("🎤 hearing you…"),
   });
   voiceCapture = capture;
   capture.blob.then(async (blob) => {
-    if (solveResolve !== mySession || !blob) return;
+    if (solveResolve !== mySession) return;
+    if (!blob) {
+      revealTyping("🎤 didn't catch that — type your answer");
+      return;
+    }
     voiceStatus("✨ transcribing…");
     try {
       const text = await voice.transcribe(blob);
       if (solveResolve !== mySession) return;
       if (!text) {
-        voiceStatus("🎤 didn't catch that — type it or press Esc");
+        revealTyping("🎤 didn't catch that — type it or press Esc");
         return;
       }
       els.solveInput.value = text;
@@ -145,7 +158,7 @@ function startVoiceCapture() {
       closeSolveBar(text);
     } catch (e) {
       console.warn("voice transcribe failed:", e);
-      if (solveResolve === mySession) voiceStatus("⚠️ voice failed — type your answer");
+      if (solveResolve === mySession) revealTyping("⚠️ voice failed — type your answer");
     }
   });
 }
@@ -159,7 +172,10 @@ export function showSolveBar({ title = "Solve!", pointsText = "" } = {}) {
     els.solvePoints.style.display = pointsText ? "" : "none";
     els.solveInput.value = "";
     els.solveBar.classList.add("visible");
-    setTimeout(() => els.solveInput.focus(), 60);
+    // Voice-first: no text field, just a compact listening pill.
+    // (It comes back automatically if voice fails.)
+    els.solveBar.classList.toggle("voice-mode", voice.isEnabled());
+    if (!voice.isEnabled()) setTimeout(() => els.solveInput.focus(), 60);
     startVoiceCapture();
   });
 }
@@ -170,7 +186,7 @@ export function solveBarVisible() {
 
 function closeSolveBar(value) {
   stopVoiceCapture();
-  els.solveBar.classList.remove("visible");
+  els.solveBar.classList.remove("visible", "voice-mode");
   els.solveInput.blur();
   const r = solveResolve;
   solveResolve = null;
@@ -188,6 +204,20 @@ export function initSolveBar() {
     e.stopPropagation();
     if (e.key === "Enter") closeSolveBar(els.solveInput.value);
     if (e.key === "Escape") closeSolveBar(null);
+  });
+  // Voice-mode pill has no focused input, so handle keys at window level:
+  // Esc cancels, and typing a character switches back to the keyboard.
+  window.addEventListener("keydown", (e) => {
+    if (!solveBarVisible()) return;
+    if (document.activeElement === els.solveInput) return;
+    if (e.key === "Escape") {
+      closeSolveBar(null);
+    } else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
+      revealTyping("");
+      els.solveInput.value += e.key;
+      e.preventDefault();
+      e.stopPropagation();
+    }
   });
 }
 
