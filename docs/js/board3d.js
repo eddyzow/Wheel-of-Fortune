@@ -30,6 +30,81 @@ const PILL_HALF_H = 0.45 * GOLD_H;
 const PITCH_X = TILE_W + GAP;
 const PITCH_Y = TILE_H + GAP;
 
+// Light-ring fragment shader. u = position along the loop (0..1, clockwise
+// from the top-left); HDR colors above the bloom threshold so the ring glows.
+const NEON_FRAG = `
+uniform float uTime;
+uniform float uMode;
+uniform float uModeT;
+uniform float uFlash;
+uniform float uFlashT;
+uniform float uFlashDur;
+uniform float uGain;
+varying vec2 vUv;
+
+const vec3 ROYAL = vec3(0.03, 0.17, 0.95);
+const vec3 LIGHT = vec3(0.35, 0.78, 1.0);
+const vec3 WHITE = vec3(1.0, 1.0, 1.0);
+const vec3 GREEN = vec3(0.03, 0.82, 0.15);
+const vec3 RED   = vec3(1.0, 0.08, 0.06);
+const vec3 GOLD  = vec3(1.0, 0.72, 0.16);
+const float TAU = 6.2831853;
+
+void main() {
+  float u = vUv.x;
+  float t = uTime;
+
+  // --- base mode ---
+  float m = floor(uMode + 0.5);
+  vec3 col = ROYAL * (0.9 + 0.1 * sin(t * 1.6));
+  if (m == 1.0) {
+    // Toss-up: a few broad light-blue / royal-blue sections, smoothly
+    // blended, rolling counter-clockwise around the board
+    float wave = 0.5 + 0.5 * sin((u * 4.0 + t * 0.38) * TAU);
+    col = mix(ROYAL, LIGHT, wave);
+  } else if (m == 2.0) {
+    // Buzzed in: chase freezes to a bright steady light blue
+    col = LIGHT * (0.94 + 0.06 * sin(t * 6.0));
+  } else if (m == 3.0) {
+    // Hurry (bonus clock): quicker blended white/blue roll
+    float wave = 0.5 + 0.5 * sin((u * 6.0 + t * 0.9) * TAU);
+    col = mix(ROYAL, WHITE, wave * 0.85);
+  } else if (m == 4.0) {
+    // Celebrate: gold/white roll
+    float wave = 0.5 + 0.5 * sin((u * 5.0 - t * 0.7) * TAU);
+    col = mix(GOLD, WHITE, wave * 0.7);
+  }
+
+  // --- transient flash overlay ---
+  if (uFlash > 0.5) {
+    float p = clamp((t - uFlashT) / uFlashDur, 0.0, 1.0);
+    float env = 1.0 - smoothstep(0.62, 1.0, p);
+    if (uFlash < 1.5) {
+      // Solved: green with a gentle pulse, held, then eased back to blue
+      float pulse = 0.78 + 0.22 * sin((t - uFlashT) * TAU * 1.6);
+      col = mix(col, GREEN * pulse, env);
+    } else if (uFlash < 2.5) {
+      // Puzzle revealed: solid white that cross-fades to green (no sections)
+      vec3 wg = mix(WHITE, GREEN, smoothstep(0.12, 0.5, p));
+      col = mix(col, wg, env);
+    } else if (uFlash < 3.5) {
+      // Good guess: a broad soft white wave rolls once around (counter-clockwise)
+      float d = abs(fract(u + p + 0.5) - 0.5);
+      col = mix(col, WHITE, exp(-d * d * 45.0) * 0.85 * (1.0 - p * 0.35));
+    } else if (uFlash < 4.5) {
+      // Wrong: quick red blinks
+      float blink = step(0.5, fract((t - uFlashT) * 6.0));
+      col = mix(col, RED, blink * env);
+    } else {
+      // Bankrupt: red sweep over a dimmed ring
+      float d = abs(fract(u - p * 2.0 + 0.5) - 0.5);
+      col = mix(col * 0.35, RED, exp(-d * d * 80.0)) * env + col * (1.0 - env);
+    }
+  }
+  gl_FragColor = vec4(col * uGain, 1.0);
+}
+`;
+
 
 export class Board3D {
   constructor(canvas) {
@@ -282,6 +357,40 @@ export class Board3D {
     return s;
   }
 
+  // Flat light band following the stepped outline: crisp mitred corners,
+  // exact width. uv.x = position along the loop (0..1) for the shader.
+  lightBandGeometry(margin, width) {
+    const inner = this.steppedOutlinePoints(margin - width / 2, 0);
+    const outer = this.steppedOutlinePoints(margin + width / 2, 0);
+    const n = inner.length;
+    // cumulative length along the centerline for u
+    const center = this.steppedOutlinePoints(margin, 0);
+    const lens = [0];
+    for (let i = 0; i < n; i++) {
+      const a = center[i], b = center[(i + 1) % n];
+      lens.push(lens[i] + a.distanceTo(b));
+    }
+    const total = lens[n];
+    const pos = [];
+    const uv = [];
+    const idx = [];
+    for (let i = 0; i <= n; i++) {
+      const k = i % n;
+      const u = lens[i] / total; // i === n → u = 1 (closing seam)
+      pos.push(inner[k].x, inner[k].y, 0, outer[k].x, outer[k].y, 0);
+      uv.push(u, 0, u, 1);
+    }
+    for (let i = 0; i < n; i++) {
+      const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+      idx.push(a, c, b, b, c, d);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    geo.setIndex(idx);
+    return geo;
+  }
+
   // Points of the stepped outline (used for the neon tube path).
   steppedOutlinePoints(margin, z) {
     const A = (ROW_LENGTHS[0] * PITCH_X) / 2 + margin;
@@ -300,7 +409,7 @@ export class Board3D {
     // Black face plate the tiles are set into (the show board's face is a
     // black grid, not colored).
     const face = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(this.steppedShape(0.55), {
+      new THREE.ExtrudeGeometry(this.steppedShape(0.68), {
         depth: 0.34,
         bevelEnabled: true,
         bevelThickness: 0.05,
@@ -316,7 +425,7 @@ export class Board3D {
 
     // Chrome rim around the plate — wide enough to read as a metal frame.
     const rim = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(this.steppedShape(1.0), {
+      new THREE.ExtrudeGeometry(this.steppedShape(1.08), {
         depth: 0.2,
         bevelEnabled: true,
         bevelThickness: 0.06,
@@ -330,57 +439,65 @@ export class Board3D {
     rim.castShadow = true;
     this.scene.add(rim);
 
-    // Neon outline: a steady blue strip (like the first version) with
-    // bright light dashes RUNNING around the silhouette on top of it.
-    const pts = this.steppedOutlinePoints(0.3, 0);
-    const path = new THREE.CurvePath();
-    for (let i = 0; i < pts.length; i++) {
-      path.add(new THREE.LineCurve3(pts[i], pts[(i + 1) % pts.length]));
-    }
-
-    // Steady base strip
-    this.matNeon = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    this.matNeon.color.setRGB(0.14, 1.15, 1.4);
-    const strip = new THREE.Mesh(
-      new THREE.TubeGeometry(path, 256, 0.03, 8, true),
-      this.matNeon
-    );
-    strip.position.z = -0.05;
-    this.scene.add(strip);
-
-    // Traveling dashes: alpha-mapped tube, texture offset animated in tick.
-    // TubeGeometry runs uv.x along the tube's length, so scrolling offset.x
-    // sends the dashes racing around the board.
-    const dashCanvas = document.createElement("canvas");
-    dashCanvas.width = 256;
-    dashCanvas.height = 4;
-    const dg = dashCanvas.getContext("2d");
-    const grad = dg.createLinearGradient(0, 0, 256, 0);
-    grad.addColorStop(0.0, "black");
-    grad.addColorStop(0.62, "black");
-    grad.addColorStop(0.8, "white"); // comet: sharp head, long tail
-    grad.addColorStop(0.86, "white");
-    grad.addColorStop(0.9, "black");
-    grad.addColorStop(1.0, "black");
-    dg.fillStyle = grad;
-    dg.fillRect(0, 0, 256, 4);
-    this.dashTex = new THREE.CanvasTexture(dashCanvas);
-    this.dashTex.wrapS = THREE.RepeatWrapping;
-    this.dashTex.repeat.set(6, 1); // six comets chasing each other
-    this.matDash = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      alphaMap: this.dashTex,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
+    // Neon light ring: ONE tube whose color along the loop is computed in a
+    // shader from a base MODE (idle blue, toss-up chase, buzzed, hurry,
+    // celebrate) plus transient FLASHES (reveal, solved, good/bad guess,
+    // bankrupt) — modelled on the real board's light behaviour.
+    this.neonUniforms = {
+      uTime: { value: 0 },
+      uMode: { value: 0 },
+      uModeT: { value: 0 },
+      uFlash: { value: 0 },
+      uFlashT: { value: 0 },
+      uFlashDur: { value: 1 },
+    };
+    const NEON_VERT = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`;
+    // Main bar: LDR saturated colors (like real LEDs) — kept below the
+    // range where ACES tone mapping would wash them toward white.
+    this.matNeon = new THREE.ShaderMaterial({
+      uniforms: { ...this.neonUniforms, uGain: { value: 1.0 } },
+      vertexShader: NEON_VERT,
+      fragmentShader: NEON_FRAG,
     });
-    this.matDash.color.setRGB(0.5, 3.0, 3.6);
-    const dash = new THREE.Mesh(
-      new THREE.TubeGeometry(path, 256, 0.052, 8, true),
-      this.matDash
-    );
-    dash.position.z = -0.04;
-    this.scene.add(dash);
+    // Flat light band (~1/5 tile wide) with crisp corners, like the show.
+    const ring = new THREE.Mesh(this.lightBandGeometry(0.44, 0.2), this.matNeon);
+    ring.position.z = -0.02;
+    this.scene.add(ring);
+    // Soft additive halo around the bar — the glow, in the bar's own color.
+    this.matNeonHalo = new THREE.ShaderMaterial({
+      uniforms: { ...this.neonUniforms, uGain: { value: 0.16 } },
+      vertexShader: NEON_VERT,
+      fragmentShader: NEON_FRAG,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const halo = new THREE.Mesh(this.lightBandGeometry(0.44, 0.62), this.matNeonHalo);
+    halo.position.z = -0.05;
+    this.scene.add(halo);
+  }
+
+  // Base lighting mode: 'idle' | 'chase' | 'buzzed' | 'hurry' | 'celebrate'
+  neonMode(name) {
+    const modes = { idle: 0, chase: 1, buzzed: 2, hurry: 3, celebrate: 4 };
+    this.neonUniforms.uMode.value = modes[name] ?? 0;
+    this.neonUniforms.uModeT.value = this.clock?.elapsedTime ?? 0;
+  }
+
+  // Transient flash on top of the mode:
+  // 'solved' (green) | 'reveal' (white/green) | 'good' (white sweep) |
+  // 'bad' (red blink) | 'bankrupt' (red sweep)
+  neonFlash(name, durationSec) {
+    const flashes = { solved: 1, reveal: 2, good: 3, bad: 4, bankrupt: 5 };
+    const defaults = { solved: 2.4, reveal: 1.6, good: 1.5, bad: 0.8, bankrupt: 1.6 };
+    this.neonUniforms.uFlash.value = flashes[name] ?? 0;
+    this.neonUniforms.uFlashT.value = this.clock?.elapsedTime ?? 0;
+    this.neonUniforms.uFlashDur.value = durationSec ?? defaults[name] ?? 1;
   }
 
   buildTiles() {
@@ -641,13 +758,13 @@ export class Board3D {
       m.color.setRGB(2.8 * s, 2.3 * s, 1.25 * s);
     });
 
-    // Steady neon strip + light dashes racing around the board.
-    // Celebrations: dashes sprint and brighten (no strobing).
-    if (this.dashTex) {
-      const dashSpeed = this.glowColor ? 0.55 : 0.12;
-      this.dashTex.offset.x -= dashSpeed * dt;
-      const k = this.glowColor ? 1.4 : 1.0;
-      this.matDash.color.setRGB(0.5 * k, 3.0 * k, 3.6 * k);
+    // Neon ring: advance time, auto-clear finished flashes.
+    if (this.neonUniforms) {
+      this.neonUniforms.uTime.value = t;
+      const nu = this.neonUniforms;
+      if (nu.uFlash.value > 0 && t - nu.uFlashT.value > nu.uFlashDur.value) {
+        nu.uFlash.value = 0;
+      }
     }
 
     if (this.glowColor) {
@@ -683,10 +800,15 @@ export class Board3D {
       g.fillStyle = grad;
       g.fillRect(0, 0, c.width, c.height);
     }
+    // Big, heavy glyph: Roboto Black plus a same-color stroke to embolden.
     g.fillStyle = "#0a0d10";
-    g.font = "900 214px 'Roboto', sans-serif";
+    g.strokeStyle = "#0a0d10";
+    g.lineJoin = "round";
+    g.lineWidth = 11;
+    g.font = "900 252px 'Roboto', sans-serif";
     g.textAlign = "center";
     g.textBaseline = "middle";
+    g.strokeText(char, c.width / 2, c.height * 0.55);
     g.fillText(char, c.width / 2, c.height * 0.55);
     const tex = new THREE.CanvasTexture(c);
     tex.anisotropy = 8;
@@ -716,6 +838,7 @@ export class Board3D {
       this.setFront(tile, this.matEmpty);
     }
     this.setGlow(null);
+    this.neonMode?.("idle");
   }
 
   async setPuzzle(cells, stagger = 22) {

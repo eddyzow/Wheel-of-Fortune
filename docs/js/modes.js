@@ -143,6 +143,8 @@ export class Game {
     ui.setCategory(puzzle.category);
     this.cells = layoutPuzzle(puzzle.puzzle);
     SFX.sparkle.play();
+    this.board.neonMode("idle");
+    this.board.neonFlash("reveal"); // white + green sections on reveal
     await this.board.setPuzzle(this.cells);
     this.check();
   }
@@ -241,13 +243,14 @@ export class Game {
 
     const revealMatches = async (letter) => {
       const matches = this.cellsFor(letter);
+      this.board.neonFlash("good");
       for (let i = 0; i < matches.length; i++) {
         SFX.ding.play();
         SFX.tileFlip.play();
-        this.board.revealCell(matches[i].row, matches[i].col, { blueMs: 450 });
-        await this.sleep(420);
+        this.board.revealCell(matches[i].row, matches[i].col, { blueMs: 750 });
+        await this.sleep(850);
       }
-      await this.sleep(500);
+      await this.sleep(600);
     };
 
     readyMessage();
@@ -266,6 +269,7 @@ export class Game {
           break; // solved!
         }
         SFX.buzzer.play();
+        this.board.neonFlash("bad");
         ui.setMessage(`Not quite${this.heardSuffix(attempt)} — keep going!`);
         await this.sleep(1800);
         readyMessage();
@@ -293,6 +297,7 @@ export class Game {
           checkCompletion();
         } else {
           SFX.buzzer.play();
+          this.board.neonFlash("bad");
           ui.setMessage(`Sorry, no '${action.key}'s.`);
           await this.sleep(900);
         }
@@ -323,6 +328,7 @@ export class Game {
         ui.setMessage(`<b>${fmtMoney(wedge.value)}</b> — pick a consonant!`);
       } else if (wedge.type === "bankrupt") {
         SFX.bankrupt.play();
+        this.board.neonFlash("bankrupt");
         // Bankrupt wipes this round's earnings only.
         this.setScore(Math.min(this.score, startScore));
         hadMillion = false;
@@ -378,6 +384,7 @@ export class Game {
           checkCompletion();
         } else {
           SFX.buzzer.play();
+          this.board.neonFlash("bad");
           ui.setMessage(`Sorry, no '${letter}'s. Spin again.`);
           await this.sleep(1100);
         }
@@ -390,6 +397,7 @@ export class Game {
     stopAllMusic();
     SFX.solved.play();
     fx.celebrateSolve();
+    this.board.neonFlash("solved");
     this.board.setGlow("gold");
     ui.setMessage(`You solved it! <b>"${puzzle.puzzle}"</b>`);
     await this.revealAllRemaining({ interval: 120 });
@@ -441,6 +449,7 @@ export class Game {
 
     playTossupMusic();
     this.board.setGlow("green");
+    this.board.neonMode("chase"); // light/royal-blue sections run counter-clockwise
     ui.setMessage("Press <b>Space</b> to buzz in!");
     if (mode === "fixed") ui.els.tossupPoints.textContent = points.toLocaleString();
 
@@ -483,6 +492,7 @@ export class Game {
         running = false;
         SFX.ding.play();
         this.board.setGlow("blue");
+        this.board.neonMode("buzzed"); // chase freezes bright
         const buzzAt = elapsed;
         this.log("tossup buzz at", buzzAt.toFixed(0), "ms");
         const attempt = await ui.showSolveBar({
@@ -507,6 +517,8 @@ export class Game {
         if (attempt !== null && ui.wasVoiceAttempt()) {
           ui.setMessage(`Not it${this.heardSuffix(attempt)} — keep listening!`);
         }
+        this.board.neonFlash("bad", 0.5);
+        this.board.neonMode("chase");
         this.board.setGlow("green");
         lastTick = performance.now();
         running = true;
@@ -520,9 +532,11 @@ export class Game {
 
     const solved = outcome === "solved";
     this.log("tossup outcome:", outcome, "points:", points);
+    this.board.neonMode("idle");
     if (solved) {
       SFX.tossupSolved.play();
       fx.celebrateSolve();
+      this.board.neonFlash("solved"); // green, held, then back to blue
       this.board.setGlow("gold");
       ui.setMessage(
         `Solved in <b>${solveTimeSec.toFixed(1)}s</b> for <b>${points.toLocaleString()}</b>!`
@@ -531,6 +545,7 @@ export class Game {
       points = 0;
       this.board.setGlow(null);
       SFX.buzzer.play();
+      this.board.neonFlash("bad");
       ui.setMessage(
         this.failReason === "wrong"
           ? `Sorry, that's not it!${this.failHeard || ""}`
@@ -558,6 +573,7 @@ export class Game {
     let prize = prizes[Math.floor(rand(0, prizes.length))];
     if (hadMillion && Math.random() < 0.1) prize = "$1,000,000";
 
+    stopAllMusic(); // a previous round's win/lose track must not bleed in
     SFX.bonus.play();
     await this.loadBoard(puzzle);
 
@@ -569,8 +585,8 @@ export class Game {
       for (const m of matches) {
         SFX.ding.play();
         SFX.tileFlip.play();
-        this.board.revealCell(m.row, m.col, { blueMs: 350 });
-        await this.sleep(380);
+        this.board.revealCell(m.row, m.col, { blueMs: 650 });
+        await this.sleep(720);
       }
     }
     await this.sleep(700);
@@ -624,8 +640,8 @@ export class Game {
       for (const m of matches) {
         SFX.ding.play();
         SFX.tileFlip.play();
-        this.board.revealCell(m.row, m.col, { blueMs: 350 });
-        await this.sleep(380);
+        this.board.revealCell(m.row, m.col, { blueMs: 650 });
+        await this.sleep(720);
       }
     }
     await this.sleep(600);
@@ -634,6 +650,7 @@ export class Game {
     SFX.bonus2.stop();
     SFX.tenSecond.play();
     this.board.setGlow("green");
+    this.board.neonMode("hurry");
     let won = false;
 
     let timeLeft = 10;
@@ -674,6 +691,8 @@ export class Game {
 
     if (won) {
       SFX.bonusWin.play();
+      this.board.neonMode("celebrate");
+      this.board.neonFlash("solved");
       this.board.setGlow("gold");
       fx.celebrateBig(6000);
       ui.setMessage(
@@ -682,6 +701,8 @@ export class Game {
       await this.revealAllRemaining({ interval: 120 });
     } else {
       SFX.buzzer.play();
+      this.board.neonMode("idle");
+      this.board.neonFlash("bad");
       ui.setMessage(
         `So close!${this.heardSuffix(this.lastBonusAttempt)} It was: <b>"${puzzle.puzzle}"</b>`
       );
@@ -696,6 +717,7 @@ export class Game {
     }
     await this.sleep(2500);
     this.board.setGlow(null);
+    this.board.neonMode("idle");
     return { won, prize };
   }
 
