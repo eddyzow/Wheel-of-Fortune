@@ -25,8 +25,8 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+          "three": "./vendor/three/three.module.js",
+          "three/addons/": "./vendor/three/addons/"
         }
       }
     </script>
@@ -40,7 +40,32 @@
         <div id="loading-bar" style="height:100%;width:4%;border-radius:999px;background:linear-gradient(90deg,#3a7bff,#7ee4ff);transition:width .35s ease;"></div>
       </div>
       <div id="loading-status" style="font-size:.95rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.65);">Loading engine…</div>
+      <button id="loading-retry" onclick="location.reload()" style="display:none;margin-top:6px;padding:10px 22px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font:700 1rem 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer;">Retry</button>
     </div>
+    <script>
+      // Loader watchdog (plain script: runs even if the module graph stalls).
+      // main.js sets window.__wofBooted once it starts; until then, a stall
+      // is made visible instead of a silent freeze.
+      (function () {
+        var status = document.getElementById("loading-status");
+        var retry = document.getElementById("loading-retry");
+        var slow = setTimeout(function () {
+          if (!window.__wofBooted && status) status.textContent = "Still loading engine — slow connection…";
+        }, 6000);
+        var stuck = setTimeout(function () {
+          if (!window.__wofBooted && status) {
+            status.textContent = "The engine didn't load. Check your connection and retry.";
+            if (retry) retry.style.display = "inline-block";
+          }
+        }, 18000);
+        window.addEventListener("error", function (e) {
+          if (window.__wofBooted || !status) return;
+          status.textContent = "Load error: " + (e.message || "script failed") + " — retry?";
+          if (retry) retry.style.display = "inline-block";
+        });
+        window.__wofLoaderTimers = [slow, stuck];
+      })();
+    </script>
     <canvas id="board-canvas"></canvas>
 
     <div id="modal-overlay"></div>

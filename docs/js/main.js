@@ -30,6 +30,8 @@ function hideLoader() {
 }
 
 async function init() {
+  window.__wofBooted = true; // engine modules arrived — cancel the watchdog
+  (window.__wofLoaderTimers || []).forEach(clearTimeout);
   setLoad(12, "Loading fonts…");
   // Make sure the display font is in before any canvas text is rasterized.
   try {
@@ -404,6 +406,10 @@ async function runBonusOnly() {
 
 init().catch((e) => {
   console.error(e);
+  // Surface boot failures on the loader instead of a frozen bar.
+  setLoad(100, "Something went wrong: " + (e?.message || e) + " — retry?");
+  const retry = document.getElementById("loading-retry");
+  if (retry) retry.style.display = "inline-block";
   document.getElementById("message-label").textContent =
     "Error loading the game — check the console.";
 });
