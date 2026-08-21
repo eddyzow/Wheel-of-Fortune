@@ -74,6 +74,13 @@ async function init() {
   });
 
   window.wof = { game, input, wheel, board }; // console debugging handle
+  window.wof.playTossup = async (puzzle, category = "PHRASE", opts = {}) => {
+    if (running) {
+      abortToMenu();
+      await delay(350);
+    }
+    return startMode("custom-tossup", { puzzle, category, ...opts });
+  };
 
   ui.buildTracker();
   ui.initSolveBar();
@@ -223,7 +230,7 @@ function abortToMenu() {
   input.abort();
 }
 
-async function startMode(mode) {
+async function startMode(mode, params = {}) {
   if (running) return;
   running = true;
   input.reset();
@@ -244,6 +251,7 @@ async function startMode(mode) {
     else if (mode === "triple") await runTripleTossup();
     else if (mode === "bonus") await runBonusOnly();
     else if (mode === "examine") await runExamine();
+    else if (mode === "custom-tossup") await runCustomTossup(params);
   } catch (e) {
     if (!(e instanceof AbortGame)) console.error(e);
   } finally {
@@ -369,6 +377,23 @@ async function runTripleTossup() {
   );
   if (won === 3) fx.celebrateBig(3500);
   ui.setMessage(`You banked <b>${fmtMoney(game.score)}</b> — press <b>Space</b> for the menu.`);
+  await game.waitForSpace();
+}
+
+// --- Console/debug: play a specific puzzle as a toss-up ---
+// wof.playTossup("AWESOME SAUCE", "FOOD & DRINK")           → decaying points
+// wof.playTossup("AWESOME SAUCE", "PHRASE", { mode: "fixed", value: 2000 })
+async function runCustomTossup({ puzzle, category = "PHRASE", mode = "decay", value = 1000, revealMs = 1000, oneShot = false }) {
+  baseLayout({ tossup: true, avg: mode === "decay", score: mode === "fixed" });
+  const res = await game.tossUpRound({
+    mode, value, revealMs, oneShot,
+    puzzle: { category: String(category).toUpperCase(), puzzle: String(puzzle).toUpperCase() },
+  });
+  if (res.solved && mode === "fixed") game.setScore(game.score + value);
+  ui.setMessage(
+    (res.solved ? `Solved for <b>${res.points.toLocaleString()}</b>! ` : "") +
+      "Press <b>Space</b> for the menu."
+  );
   await game.waitForSpace();
 }
 
