@@ -89,6 +89,55 @@ export class Board3D {
     this.resize();
   }
 
+  // --- Examine mode: free-look orbit around the board ---
+  setExamine(on) {
+    if (on) {
+      this.examine = {
+        yaw: 0, pitch: -0.1, dist: 1.15,
+        tYaw: 0.35, tPitch: 0.06, tDist: 0.8, // gentle intro drift
+      };
+      if (!this.examineWired) {
+        this.examineWired = true;
+        const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+        window.addEventListener("pointerdown", (e) => {
+          if (!this.examine) return;
+          if (e.target.closest("button, input, .modal")) return;
+          this.examineDrag = { x: e.clientX, y: e.clientY };
+        });
+        window.addEventListener("pointermove", (e) => {
+          if (!this.examine || !this.examineDrag) return;
+          const ex = this.examine;
+          ex.tYaw = clamp(ex.tYaw - (e.clientX - this.examineDrag.x) * 0.005, -1.15, 1.15);
+          ex.tPitch = clamp(ex.tPitch + (e.clientY - this.examineDrag.y) * 0.004, -0.45, 0.6);
+          this.examineDrag = { x: e.clientX, y: e.clientY };
+        });
+        window.addEventListener("pointerup", () => (this.examineDrag = null));
+        window.addEventListener(
+          "wheel",
+          (e) => {
+            if (!this.examine) return;
+            const ex = this.examine;
+            ex.tDist = clamp(ex.tDist * (1 + e.deltaY * 0.0012), 0.3, 1.7);
+          },
+          { passive: true }
+        );
+      }
+    } else if (this.examine) {
+      this.examine = null;
+      this.examineDrag = null;
+      // Glide back to the home framing.
+      this.camAnim = {
+        t0: performance.now(),
+        dur: 1100,
+        from: {
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z,
+        },
+      };
+    }
+  }
+
   // Attach generated textures to materials only once they actually load,
   // so a missing file degrades to the flat-color look instead of black.
   loadTextures() {
@@ -545,6 +594,20 @@ export class Board3D {
       orbitZoom = -0.07 * w; // lean in while circling
     }
 
+    // Examine mode: player-driven orbit overrides everything else.
+    if (this.examine) {
+      const ex = this.examine;
+      ex.yaw += (ex.tYaw - ex.yaw) * 0.1;
+      ex.pitch += (ex.tPitch - ex.pitch) * 0.1;
+      ex.dist += (ex.tDist - ex.dist) * 0.1;
+      const d = (this.baseDist || 20) * ex.dist;
+      this.camera.position.set(
+        d * Math.sin(ex.yaw) * Math.cos(ex.pitch),
+        0.1 + d * Math.sin(ex.pitch),
+        d * Math.cos(ex.yaw) * Math.cos(ex.pitch)
+      );
+      this.camera.lookAt(0, 0.1, 0);
+    } else {
     // Camera motion comes only from scripted moves + a slow idle drift —
     // no mouse input.
     const px = Math.sin(t * 0.4) * 0.4 + orbitX;
@@ -568,6 +631,7 @@ export class Board3D {
       this.camera.position.z += (pz - this.camera.position.z) * 0.12;
     }
     this.camera.lookAt(0, 0.1, 0);
+    }
 
     // Chase lights: three phase groups pulsing in sequence
     const speed = this.glowColor ? 9 : 2.2;

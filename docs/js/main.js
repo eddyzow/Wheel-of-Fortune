@@ -72,23 +72,19 @@ function wireMenu() {
     card.addEventListener("click", () => startMode(card.dataset.mode));
   });
   document
-    .getElementById("intro-about-btn")
-    .addEventListener("click", showAbout);
+    .getElementById("intro-settings-btn")
+    .addEventListener("click", openSettings);
+  document
+    .getElementById("examine-btn")
+    .addEventListener("click", () => startMode("examine"));
 }
 
 function wireHeader() {
   document.getElementById("back-btn").addEventListener("click", () => {
     abortToMenu();
   });
-  document.getElementById("about-btn").addEventListener("click", showAbout);
-  const muteBtn = document.getElementById("mute-btn");
-  muteBtn.addEventListener("click", () => {
-    setMuted(!isMuted());
-    muteBtn.textContent = isMuted() ? "🔇" : "🔊";
-  });
   document.querySelectorAll(".close-modal-btn").forEach((b) =>
     b.addEventListener("click", () => {
-      document.getElementById("about-modal").style.display = "none";
       document.getElementById("settings-modal").style.display = "none";
       if (!running) ui.showMenu();
       else document.getElementById("modal-overlay").style.display = "none";
@@ -100,15 +96,20 @@ function wireHeader() {
   wireSettings();
 }
 
+let refreshSettingsUI = null;
+
 function wireSettings() {
-  const modal = document.getElementById("settings-modal");
   const keyInput = document.getElementById("el-key-input");
   const status = document.getElementById("voice-status");
 
   const toggleRow = document.getElementById("voice-toggle-row");
   const toggleBtn = document.getElementById("voice-toggle-btn");
+  const soundBtn = document.getElementById("sound-toggle-btn");
 
   const refresh = () => {
+    soundBtn.textContent = isMuted()
+      ? "🔇 Sound: OFF — click to turn on"
+      : "🔊 Sound: ON — click to turn off";
     const hasKey = !!voice.getKey();
     toggleRow.classList.toggle("hidden", !hasKey);
     if (!hasKey) {
@@ -132,13 +133,13 @@ function wireSettings() {
     refresh();
   });
 
-  document.getElementById("settings-btn").addEventListener("click", () => {
-    document.getElementById("modal-overlay").style.display = "block";
-    modal.style.display = "block";
-    if (!running) document.getElementById("intro-modal").style.display = "none";
-    keyInput.value = "";
+  soundBtn.addEventListener("click", () => {
+    setMuted(!isMuted());
     refresh();
   });
+
+  refreshSettingsUI = refresh;
+  document.getElementById("settings-btn").addEventListener("click", openSettings);
   document.getElementById("el-key-save").addEventListener("click", () => {
     voice.setKey(keyInput.value);
     keyInput.value = "";
@@ -181,10 +182,12 @@ function wireSettings() {
   });
 }
 
-function showAbout() {
+function openSettings() {
   document.getElementById("modal-overlay").style.display = "block";
-  document.getElementById("about-modal").style.display = "block";
+  document.getElementById("settings-modal").style.display = "block";
   if (!running) document.getElementById("intro-modal").style.display = "none";
+  document.getElementById("el-key-input").value = ""; // never leave a key in the DOM
+  refreshSettingsUI?.();
 }
 
 function abortToMenu() {
@@ -212,6 +215,7 @@ async function startMode(mode) {
     else if (mode === "tossup") await runEndlessTossup();
     else if (mode === "triple") await runTripleTossup();
     else if (mode === "bonus") await runBonusOnly();
+    else if (mode === "examine") await runExamine();
   } catch (e) {
     if (!(e instanceof AbortGame)) console.error(e);
   } finally {
@@ -338,6 +342,27 @@ async function runTripleTossup() {
   if (won === 3) fx.celebrateBig(3500);
   ui.setMessage(`You banked <b>${fmtMoney(game.score)}</b> — press <b>Space</b> for the menu.`);
   await game.waitForSpace();
+}
+
+// --- Examine mode: free-look at the 3D board ---
+async function runExamine() {
+  baseLayout({});
+  ui.show(ui.els.tracker, false);
+  ui.setMessage("🔍 <b>Drag</b> to orbit · <b>scroll</b> to zoom · <b>Esc</b> or Menu to exit.");
+  await game.loadBoard({ category: "BEHIND THE SCENES", puzzle: "WHEEL OF FORTUNE" });
+  for (const c of game.board.unrevealedCells()) {
+    game.board.revealCellQuick(c.row, c.col);
+  }
+  game.board.setExamine(true);
+  try {
+    while (true) {
+      const a = await input.next();
+      if (a.type === "key" && a.code === "Escape") break;
+    }
+  } finally {
+    game.board.setExamine(false);
+    ui.show(ui.els.tracker, true);
+  }
 }
 
 // --- Bonus round, standalone ---

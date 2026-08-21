@@ -82,8 +82,7 @@ button {
 }
 
 #back-btn,
-#about-btn,
-#mute-btn {
+#settings-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--panel-border);
   color: white;
@@ -96,14 +95,12 @@ button {
 }
 
 #back-btn:hover,
-#about-btn:hover,
-#mute-btn:hover {
+#settings-btn:hover {
   background: rgba(255, 255, 255, 0.18);
 }
 
 #back-btn:active,
-#about-btn:active,
-#mute-btn:active {
+#settings-btn:active {
   transform: scale(0.96);
 }
 
@@ -514,7 +511,13 @@ button {
   font-size: 0.85rem;
 }
 
-#intro-about-btn,
+.menu-footer-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+#intro-settings-btn,
+#examine-btn,
 .close-modal-btn {
   padding: 10px 22px;
   font-size: 1rem;
@@ -527,9 +530,44 @@ button {
   transition: background-color 0.15s;
 }
 
-#intro-about-btn:hover,
+#intro-settings-btn:hover,
+#examine-btn:hover,
 .close-modal-btn:hover {
   background: rgba(255, 255, 255, 0.18);
+}
+
+/* Unified settings sections */
+.settings-section {
+  text-align: left;
+  margin: 18px 0;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+}
+
+.settings-section h2 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+.settings-desc {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 6px;
+}
+
+#sound-toggle-btn,
+#voice-toggle-btn {
+  flex: 1;
+  padding: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 #about-modal h1 {

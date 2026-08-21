@@ -9,8 +9,19 @@
       rel="stylesheet"
     />
     <link href="style.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1/dist/confetti.browser.min.js"></script>
+    <!-- Pinned versions + integrity hashes: a tampered CDN copy will be
+         refused by the browser (protects the locally-stored API key from
+         script injection via these dependencies). -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"
+      integrity="sha384-SSf4pKRrGaeWL8bdA89QvGkhZo5WvIVCGwKVzfX7z+9sSaIHtE/AkOLehofI4JVY"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"
+      integrity="sha384-sPwMflxqfAN+Q5mvlkLmHiX3PORGbZSXHiSGPTXT9VHCD/AB+b+r+vJWsqprv+7k"
+      crossorigin="anonymous"
+    ></script>
     <script type="importmap">
       {
         "imports": {
@@ -60,59 +71,66 @@
 
       <div class="menu-footer">
         <span id="puzzle-count"></span>
-        <button id="intro-about-btn">About</button>
+        <div class="menu-footer-buttons">
+          <button id="examine-btn">🔍 Examine the Board</button>
+          <button id="intro-settings-btn">⚙️ Settings</button>
+        </div>
       </div>
     </div>
 
-    <!-- About -->
-    <div id="about-modal" class="modal" style="display: none">
-      <h1>About Wheel of Fortune</h1>
-      <p>
-        This is a fan-made recreation of the popular TV game show, built with
-        HTML, CSS, WebGL, and JavaScript.
-      </p>
-      <p>
-        All rights to the "Wheel of Fortune" name, logo, and game concepts are
-        reserved to their respective copyright holders. This project is for
-        educational and entertainment purposes only.
-      </p>
-      <p>
-        Game developed by Eddy Zhao (@eddyzow). Disclaimer: The puzzle bank and
-        some complex features were developed with the help of generative AI.
-        Though I do manually check the puzzles, some of them might not make too
-        much sense.
-      </p>
-      <button class="close-modal-btn">Close</button>
-    </div>
-
-    <!-- Voice settings -->
+    <!-- Unified settings -->
     <div id="settings-modal" class="modal" style="display: none">
-      <h1>Voice Solving</h1>
-      <p>
-        Buzz in with <b>Space</b> as usual — then just <b>say your answer</b>
-        instead of typing it. Powered by ElevenLabs Scribe.
-      </p>
-      <div class="settings-row">
-        <input
-          type="password"
-          id="el-key-input"
-          placeholder="Paste your ElevenLabs API key…"
-          autocomplete="off"
-        />
-        <button id="el-key-save">Save</button>
+      <h1>Settings</h1>
+
+      <div class="settings-section">
+        <h2>🔊 Sound</h2>
+        <div class="settings-row">
+          <button id="sound-toggle-btn"></button>
+        </div>
       </div>
-      <p id="voice-status" class="voice-status"></p>
-      <div class="settings-row hidden" id="voice-toggle-row">
-        <button id="voice-toggle-btn"></button>
+
+      <div class="settings-section">
+        <h2>🎤 Voice Solving</h2>
+        <p class="settings-desc">
+          Buzz in with <b>Space</b> as usual — then just <b>say your answer</b>
+          instead of typing it. Powered by ElevenLabs Scribe.
+        </p>
+        <div class="settings-row">
+          <input
+            type="password"
+            id="el-key-input"
+            placeholder="Paste your ElevenLabs API key…"
+            autocomplete="off"
+          />
+          <button id="el-key-save">Save</button>
+        </div>
+        <p id="voice-status" class="voice-status"></p>
+        <div class="settings-row hidden" id="voice-toggle-row">
+          <button id="voice-toggle-btn"></button>
+        </div>
+        <div class="settings-row">
+          <button id="mic-test-btn">🎙️ Test Mic (records 3s, plays it back)</button>
+        </div>
+        <p id="mic-test-result" class="voice-status"></p>
+        <p class="settings-note">
+          Your key is stored only in this browser (localStorage) and is sent
+          only to api.elevenlabs.io. Typing always works as a fallback.
+        </p>
       </div>
-      <div class="settings-row">
-        <button id="mic-test-btn">🎙️ Test Mic (records 3s, plays it back)</button>
+
+      <div class="settings-section">
+        <h2>ℹ️ About</h2>
+        <p class="settings-note">
+          A fan-made recreation of the popular TV game show, built with HTML,
+          CSS, WebGL, and JavaScript. All rights to the "Wheel of Fortune"
+          name, logo, and game concepts are reserved to their respective
+          copyright holders — this project is for educational and
+          entertainment purposes only. Developed by Eddy Zhao (@eddyzow).
+          The puzzle bank and some features were built with the help of
+          generative AI; some puzzles might not make too much sense.
+        </p>
       </div>
-      <p id="mic-test-result" class="voice-status"></p>
-      <p class="settings-note">
-        Your key is stored only in this browser (localStorage) and is sent
-        only to api.elevenlabs.io. Typing always works as a fallback.
-      </p>
+
       <button class="close-modal-btn" id="settings-close">Close</button>
     </div>
 
@@ -121,9 +139,7 @@
       <button id="back-btn">‹ Menu</button>
       <div id="header-title">Wheel of Fortune</div>
       <div class="header-right">
-        <button id="settings-btn" title="Voice settings">🎤</button>
-        <button id="mute-btn" title="Toggle sound">🔊</button>
-        <button id="about-btn">About</button>
+        <button id="settings-btn" title="Settings">⚙️ Settings</button>
       </div>
     </header>
 

@@ -6,6 +6,10 @@
 
 const KEY_STORAGE = "wof_elevenlabs_key";
 
+// The ONLY place the key is ever sent. Keep this a frozen constant so no
+// code path (or injected value) can redirect the credential elsewhere.
+const SCRIBE_ENDPOINT = "https://api.elevenlabs.io/v1/speech-to-text";
+
 export function getKey() {
   try {
     return localStorage.getItem(KEY_STORAGE) || "";
@@ -16,8 +20,14 @@ export function getKey() {
 
 export function setKey(key) {
   try {
-    if (key) localStorage.setItem(KEY_STORAGE, key.trim());
-    else localStorage.removeItem(KEY_STORAGE);
+    const k = (key || "").trim();
+    // Reject anything that isn't shaped like an API token (e.g. an
+    // accidentally-pasted URL or sentence) so junk never gets stored.
+    if (k && /^[A-Za-z0-9_-]{16,128}$/.test(k)) {
+      localStorage.setItem(KEY_STORAGE, k);
+    } else {
+      localStorage.removeItem(KEY_STORAGE);
+    }
   } catch {
     /* private browsing — voice just stays off */
   }
@@ -246,7 +256,7 @@ export async function transcribe(blob) {
     blob,
     blob.type.includes("mp4") ? "answer.mp4" : "answer.webm"
   );
-  const res = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+  const res = await fetch(SCRIBE_ENDPOINT, {
     method: "POST",
     headers: { "xi-api-key": key },
     body: form,
