@@ -215,9 +215,22 @@ export class Board3D {
 
   // Attach generated textures to materials only once they actually load,
   // so a missing file degrades to the flat-color look instead of black.
+  // Resolves when the key textures are in (or failed) — drives the loader.
+  whenReady() {
+    return Promise.all(this.assetPromises || []);
+  }
+
+  trackLoad(file, loadFn) {
+    this.assetPromises = this.assetPromises || [];
+    this.assetPromises.push(
+      new Promise((resolve) => loadFn(resolve)).catch(() => {})
+    );
+  }
+
   loadTextures() {
     const loader = new THREE.TextureLoader();
     const attach = (file, slot, { repeat = null, onLoad = null } = {}, targets) => {
+      this.trackLoad(file, (done) =>
       loader.load(
         `assets/textures/${file}`,
         (t) => {
@@ -233,10 +246,11 @@ export class Board3D {
             mat.needsUpdate = true;
           }
           onLoad?.(t);
+          done();
         },
         undefined,
-        () => {}
-      );
+        () => done()
+      ));
     };
 
     attach(
@@ -295,22 +309,28 @@ export class Board3D {
     // Static flat studio backdrop (generated: tools/gen_backdrop.py).
     // scene.background renders in screen space, so it never moves with
     // the camera and always covers the whole frame.
-    new THREE.TextureLoader().load(
-      "assets/textures/studio_backdrop.png",
-      (map) => {
-        map.colorSpace = THREE.SRGBColorSpace;
-        this.scene.background = map;
-      },
-      undefined,
-      () => {
-        this.scene.background = new THREE.Color(0x05070f);
-      }
+    this.trackLoad("studio_backdrop.png", (done) =>
+      new THREE.TextureLoader().load(
+        "assets/textures/studio_backdrop.png",
+        (map) => {
+          map.colorSpace = THREE.SRGBColorSpace;
+          this.scene.background = map;
+          done();
+        },
+        undefined,
+        () => {
+          this.scene.background = new THREE.Color(0x05070f);
+          done();
+        }
+      )
     );
 
     // Gold sunburst set piece behind the board, like the show's surround.
+    this.trackLoad("gold_sunburst.png", (done) =>
     new THREE.TextureLoader().load(
       "assets/textures/gold_sunburst.png",
       (map) => {
+        done();
         map.colorSpace = THREE.SRGBColorSpace;
         const gold = new THREE.Mesh(
           new THREE.PlaneGeometry(GOLD_W, GOLD_H),
@@ -324,8 +344,8 @@ export class Board3D {
         this.scene.add(gold);
       },
       undefined,
-      () => {}
-    );
+      () => done()
+    ));
   }
 
   rowY(row) {

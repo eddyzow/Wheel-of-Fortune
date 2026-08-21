@@ -14,7 +14,23 @@ let game = null;
 let input = null;
 let running = false;
 
+// Loading screen (inline in index.html) — driven by real milestones.
+function setLoad(pct, status) {
+  const bar = document.getElementById("loading-bar");
+  const label = document.getElementById("loading-status");
+  if (bar) bar.style.width = pct + "%";
+  if (label && status) label.textContent = status;
+}
+function hideLoader() {
+  const el = document.getElementById("loading-screen");
+  if (!el) return;
+  el.style.opacity = "0";
+  el.style.pointerEvents = "none";
+  setTimeout(() => el.remove(), 700);
+}
+
 async function init() {
+  setLoad(12, "Loading fonts…");
   // Make sure the display font is in before any canvas text is rasterized.
   try {
     await Promise.race([
@@ -26,7 +42,9 @@ async function init() {
     ]);
   } catch { /* fall back to system font */ }
 
+  setLoad(28, "Loading puzzles…");
   const { main, bonus, triple } = await loadPuzzles();
+  setLoad(45, "Building the stage…");
   const board = new Board3D(document.getElementById("board-canvas"));
   const wheel = new Wheel(document.getElementById("wheel-canvas"));
 
@@ -63,8 +81,16 @@ async function init() {
   document.getElementById("puzzle-count").textContent =
     `${main.length.toLocaleString()} puzzles · ${bonus.length.toLocaleString()} bonus puzzles loaded`;
 
+  // Wait for the key textures (backdrop, pill, tiles) so the first frame
+  // is the finished set — but never hang if one fails to load.
+  setLoad(70, "Lighting the set…");
+  await Promise.race([board.whenReady(), delay(12000)]);
+  setLoad(100, "Ready!");
+  await delay(250);
+
   ui.showMenu();
   document.getElementById("intro-modal").classList.add("ready");
+  hideLoader();
 }
 
 function wireMenu() {
